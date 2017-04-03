@@ -5,8 +5,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:visibility="visible"
-    tools:context="com.ottawa.treasurehunt.treasurehunt.SplashScreen"
-    android:background="@drawable/treasure_map5">
+    tools:context="com.ottawa.treasurehunt.treasurehunt.SplashScreen">
 
 
 </android.support.constraint.ConstraintLayout>
