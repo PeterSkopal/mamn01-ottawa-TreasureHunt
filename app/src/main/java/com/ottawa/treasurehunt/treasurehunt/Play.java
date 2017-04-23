@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
@@ -27,6 +28,7 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     private float[] mOrientation = new float[3];
     private TextView degree;
     private Vibrator vibrator;
+    private final static float LOWPASS_ALPHA = 0.10f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +44,12 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor == mAccelerometer) {
-            System.arraycopy(event.values, 0, mLastAccelerometer, 0, event.values.length);
             mLastAccelerometerSet = true;
-        } else if (event.sensor == mMagnetometer) {
-            System.arraycopy(event.values, 0, mLastMagnetometer, 0, event.values.length);
+            mLastAccelerometer = lowPass(event.values.clone(), mLastAccelerometer);
+        }
+        if (event.sensor == mMagnetometer) {
             mLastMagnetometerSet = true;
+            mLastMagnetometer = lowPass(event.values.clone(), mLastMagnetometer);
         }
         if (mLastAccelerometerSet && mLastMagnetometerSet) {
             SensorManager.getRotationMatrix(mR, null, mLastAccelerometer, mLastMagnetometer);
@@ -54,11 +57,10 @@ public class Play extends AppCompatActivity implements SensorEventListener {
             float azimuthInRadians = mOrientation[0];
             float azimuthInDegress = (float)(Math.toDegrees(azimuthInRadians)+360)%360;
 
-            degree.setText("degrees: " + azimuthInDegress);
+            degree.setText("degrees: " + Math.round(azimuthInDegress));
 
-            //TODO: The game chrashes when the vibrator is activated (why?)
             if (azimuthInDegress < 210 && azimuthInDegress > 190) {
-                vibrator.vibrate(50);
+                vibrator.vibrate(10);
             }
         }
     }
@@ -79,6 +81,16 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         super.onPause();
         mSensorManager.unregisterListener(this, mAccelerometer);
         mSensorManager.unregisterListener(this, mMagnetometer);
+    }
+
+    private float[] lowPass(float[] input, float[] output) {
+        if (output == null) return input;
+
+        for (int i = 0; i < input.length; i++) {
+            output[i] = output[i] + LOWPASS_ALPHA * (input[i] - output[i]);
+        }
+
+        return output;
     }
 }
 

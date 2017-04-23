@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ottawa.treasurehunt.treasurehunt">
 
+    <uses-permission android:name="android.permission.VIBRATE"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -24,8 +26,9 @@
         <activity
             android:name=".Play"
             android:exported="true">
-            <uses-permission android:name="android.permission.VIBRATE"/>
         </activity>
+
     </application>
+
 
 </manifest>
