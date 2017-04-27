@@ -32,7 +32,10 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(this, CheckpointActivity.class);
         i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
 
-        String[] questions = new String[]{ "How tall is the Turning Torso? " };
+        String[] questions = new String[]{
+                "How tall is the Turning Torso?",
+                "Where's the headquarters of the automotive company Tesla located?"
+        };
 
         i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
 
@@ -42,8 +45,17 @@ public class MainActivity extends AppCompatActivity {
         firstQAnswers.put("173m", false);
         firstQAnswers.put("190m", true);
 
+        HashMap<String, Boolean> secondQAnswers = new HashMap<>();
+        secondQAnswers.put("Los Angeles, California", false);
+        secondQAnswers.put("Palo Alto, California", true);
+        secondQAnswers.put("San Fransisco, California", false);
+        secondQAnswers.put("Silicon Valley, California", false);
+
         @SuppressWarnings("unchecked")
-        HashMap<String, Boolean>[] answers = new HashMap[]{ firstQAnswers };
+        HashMap<String, Boolean>[] answers = new HashMap[]{
+                firstQAnswers,
+                secondQAnswers
+        };
 
         i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
 
