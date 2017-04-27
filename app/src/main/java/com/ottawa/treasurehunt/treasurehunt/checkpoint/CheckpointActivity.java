@@ -1,16 +1,17 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.app.Fragment;
-import android.net.Uri;
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.ottawa.treasurehunt.treasurehunt.Play;
 import com.ottawa.treasurehunt.treasurehunt.R;
 
 import java.util.HashMap;
 
-public class CheckpointActivity extends FragmentActivity implements QuizFragment.OnFragmentInteractionListener {
+public class CheckpointActivity extends FragmentActivity implements QuizFragment.ICallback {
     public static final String GAME_TYPE = "GAME_TYPE";
 
     public static final String MINIGAME = "GAME_MINIGAME";
@@ -19,6 +20,10 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
     public static final String QUIZ = "GAME_QUIZ";
     public static final String QUIZ_QUESTIONS = "GAME_QUIZ_QUESTION";
     public static final String QUIZ_ANSWERS = "GAME_QUIZ_ANSWERS";
+
+    Fragment[] quizFragments;
+    int currentQuiz;
+    int currentPoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +49,21 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
                     (HashMap<String, Boolean>[]) bundle.getSerializable(QUIZ_ANSWERS);
 
             Log.i("Checkpoint", "Launching QuizFragment");
+            Log.i("Checkpoint", "Question length: " + question.length);
+            Log.i("Checkpoint", "Answers length: " + answers.length);
 
-            setFragment(QuizFragment.newInstance(question[0], answers[0]));
+            if (question.length != answers.length)
+                throw new RuntimeException("CheckpointActivity: Must provide answers for all questions.");
+
+            quizFragments = new Fragment[question.length];
+
+            for (int i = 0; i < question.length; i++) {
+                quizFragments[i] = QuizFragment.newInstance(
+                        question[i], answers[i], i + 1, question.length);
+            }
+
+            setFragment(quizFragments[0]);
+            currentQuiz = 0;
         }
     }
 
@@ -58,7 +76,22 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-        Log.i("Checkpoint", "onFragmentInteraction URI: " + uri);
+    public void callback(boolean answeredCorrect) {
+        currentQuiz++;
+
+        if (answeredCorrect)
+            currentPoints++; // placeholder
+
+        Log.i("Checkpoint", "Trying to launch next quizFragment.");
+
+        if (currentQuiz < quizFragments.length) {
+            setFragment(quizFragments[currentQuiz]);
+        } else {
+            // no more quiz fragments
+            // collect and store the points
+            // return to Play activity
+            this.startActivity(
+                    new Intent(this, Play.class));
+        }
     }
 }
