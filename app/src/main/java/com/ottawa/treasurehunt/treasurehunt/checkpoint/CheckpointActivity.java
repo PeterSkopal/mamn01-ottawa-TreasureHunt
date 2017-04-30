@@ -16,6 +16,7 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
 
     public static final String MINIGAME = "GAME_MINIGAME";
     public static final String MINIGAME_ID = "GAME_MINIGAME_ID";
+    public static final int MINIGAME_SHAKE = 0;
 
     public static final String QUIZ = "GAME_QUIZ";
     public static final String QUIZ_QUESTIONS = "GAME_QUIZ_QUESTION";
@@ -39,6 +40,10 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
 
         if (bundle.getString(GAME_TYPE).equals(MINIGAME)) {
             int id = bundle.getInt(MINIGAME_ID); // launch minigame with this id
+
+            Fragment miniGameFragment = new ShakeGameFragment();
+
+            setFragment(miniGameFragment);
 
             // example: setFragment(minigameFragments[id].newInstance());
         } else if (bundle.getString(GAME_TYPE).equals(QUIZ)) {

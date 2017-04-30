@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onMapsClick (View v) {
-        Intent i = new Intent(this, ShakeGameActivity.class);
+        Intent i = new Intent(this, MapsActivity.class);
         this.startActivity(i);
     }
 
@@ -63,7 +63,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onMiniClick (View v) {
-        Intent i = new Intent(this, ShakeGameActivity.class);
+      //  Intent i = new Intent(this, ShakeGameActivity.class);
+        Intent i = new Intent(this, CheckpointActivity.class);
+        i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
+        i.putExtra(CheckpointActivity.MINIGAME_ID, CheckpointActivity.MINIGAME_SHAKE);
+
+
         this.startActivity(i);
     }
 }

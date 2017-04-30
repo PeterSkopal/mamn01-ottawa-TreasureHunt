@@ -48,7 +48,7 @@
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
         <activity android:name=".checkpoint.CheckpointActivity" />
-        <activity android:name=".ShakeGameActivity"></activity>
+        <activity android:name=".checkpoint.ShakeGameFragment"></activity>
     </application>
 
 </manifest>
