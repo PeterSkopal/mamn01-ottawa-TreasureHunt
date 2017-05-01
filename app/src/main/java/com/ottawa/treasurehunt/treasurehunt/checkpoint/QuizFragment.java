@@ -39,13 +39,11 @@ public class QuizFragment extends Fragment {
     View.OnClickListener onAnswerClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (answers.get(((Button) v).getText())) {
-                progressTimeHandler.removeCallbacks(progressTimeRunnable);  // should be moved to
-                                                                            // onDestroy or onPause?
+            progressTimeHandler.removeCallbacks(progressTimeRunnable);
+            if (answers.get(((Button) v).getText()))
                 resCallback.callback(true); // answer was correct
-            } else {
-                // answer was incorrect
-            }
+            else
+                resCallback.callback(false);
         }
     };
 

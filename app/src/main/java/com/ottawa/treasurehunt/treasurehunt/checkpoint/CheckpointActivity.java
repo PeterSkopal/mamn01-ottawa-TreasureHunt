@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.ottawa.treasurehunt.treasurehunt.Play;
@@ -94,13 +95,29 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
         Log.i("Checkpoint", "call running CheckpointActivity::IResultCallback");
 
         if (gameType.equals(QUIZ) && currentQuiz < quizFragments.length) {
-            setFragment(quizFragments[currentQuiz]);
+            setFragment(ResultSplash.newInstance(answeredCorrect));
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setFragment(quizFragments[currentQuiz]);
+                }
+            }, 2000);
         } else {
             // no more quiz fragments or we're a mini-game
             // collect and store the points
             // return to Play activity
-            this.startActivity(
-                    new Intent(this, Play.class));
+
+            setFragment(ResultSplash.newInstance(answeredCorrect));
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(
+                            new Intent(getBaseContext(), Play.class));
+                    finish();
+                }
+            }, 2000);
         }
     }
 }
