@@ -1,8 +1,8 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.ottawa.treasurehunt.treasurehunt.MainActivity;
 import com.ottawa.treasurehunt.treasurehunt.R;
 
 public class ShakeGameFragment extends Fragment implements SensorEventListener{
@@ -31,6 +30,8 @@ public class ShakeGameFragment extends Fragment implements SensorEventListener{
     private int DIFFICULTY = 200;
 
     private ProgressBar progressBar;
+
+    private IResultCallback resCallback;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -85,8 +86,7 @@ public class ShakeGameFragment extends Fragment implements SensorEventListener{
                     .setMessage("Mini Game finished!")
                     .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which){
-                            Intent intent = new Intent(getActivity().getBaseContext(), MainActivity.class);
-                            startActivity(intent);
+                            resCallback.callback(true);
                         }
                     });
             AlertDialog alert = builder.create();
@@ -109,6 +109,23 @@ public class ShakeGameFragment extends Fragment implements SensorEventListener{
     public void onPause(){
         super.onPause();
         sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof IResultCallback) {
+            resCallback = (IResultCallback) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement IResultCallback");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        resCallback = null;
     }
 
     private  float[] lowPass(float[] input, float[] output){

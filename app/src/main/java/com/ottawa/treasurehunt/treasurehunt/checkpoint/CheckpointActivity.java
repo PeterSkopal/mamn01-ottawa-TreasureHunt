@@ -11,7 +11,7 @@ import com.ottawa.treasurehunt.treasurehunt.R;
 
 import java.util.HashMap;
 
-public class CheckpointActivity extends FragmentActivity implements QuizFragment.ICallback {
+public class CheckpointActivity extends FragmentActivity implements IResultCallback {
     public static final String GAME_TYPE = "GAME_TYPE";
 
     public static final String MINIGAME = "GAME_MINIGAME";
@@ -21,6 +21,8 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
     public static final String QUIZ = "GAME_QUIZ";
     public static final String QUIZ_QUESTIONS = "GAME_QUIZ_QUESTION";
     public static final String QUIZ_ANSWERS = "GAME_QUIZ_ANSWERS";
+
+    private String gameType;
 
     Fragment[] quizFragments;
     int currentQuiz;
@@ -37,6 +39,8 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
 
         if (bundle == null || bundle.getString(GAME_TYPE) == null)
             throw new RuntimeException("CheckpointActivity: Invalid extras provided.");
+
+        gameType = bundle.getString(GAME_TYPE);
 
         if (bundle.getString(GAME_TYPE).equals(MINIGAME)) {
             int id = bundle.getInt(MINIGAME_ID); // launch minigame with this id
@@ -87,12 +91,12 @@ public class CheckpointActivity extends FragmentActivity implements QuizFragment
         if (answeredCorrect)
             currentPoints++; // placeholder
 
-        Log.i("Checkpoint", "Trying to launch next quizFragment.");
+        Log.i("Checkpoint", "call running CheckpointActivity::IResultCallback");
 
-        if (currentQuiz < quizFragments.length) {
+        if (gameType.equals(QUIZ) && currentQuiz < quizFragments.length) {
             setFragment(quizFragments[currentQuiz]);
         } else {
-            // no more quiz fragments
+            // no more quiz fragments or we're a mini-game
             // collect and store the points
             // return to Play activity
             this.startActivity(

@@ -1,7 +1,6 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
@@ -28,7 +27,7 @@ public class QuizFragment extends Fragment {
     private int quizNumber;
     private int quizNumberTotal;
 
-    private ICallback mCallback;
+    private IResultCallback resCallback;
 
     TextView txtQuizProgress;
     ProgressBar progressTimeLeft;
@@ -43,7 +42,7 @@ public class QuizFragment extends Fragment {
             if (answers.get(((Button) v).getText())) {
                 progressTimeHandler.removeCallbacks(progressTimeRunnable);  // should be moved to
                                                                             // onDestroy or onPause?
-                mCallback.callback(true); // answer was correct
+                resCallback.callback(true); // answer was correct
             } else {
                 // answer was incorrect
             }
@@ -125,7 +124,7 @@ public class QuizFragment extends Fragment {
                     progressTimeHandler.postDelayed(this, 50);
                 } else {
                     progressTimeHandler.removeCallbacks(this);
-                    mCallback.callback(false);
+                    resCallback.callback(false);
                 }
             }
         };
@@ -138,22 +137,18 @@ public class QuizFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof ICallback) {
-            mCallback = (ICallback) context;
+        if (context instanceof IResultCallback) {
+            resCallback = (IResultCallback) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement ICallback");
+                    + " must implement IResultCallback");
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mCallback = null;
+        resCallback = null;
         progressTimeHandler.removeCallbacks(progressTimeRunnable);
-    }
-
-    public interface ICallback {
-        void callback(boolean wasCorrect);
     }
 }
