@@ -1,3 +1,4 @@
+```
 games : [ {
     name : string,
     description : string,
@@ -5,10 +6,12 @@ games : [ {
     position: {
         long : double,
         lat : double
-        },
+    },
     checkpoints: [ {
-        long : double,
-        lat : double,
+        position: {
+            long : double,
+            lat : double
+        },
         minigame : id,
         quiz : [ {
             answers : [ {
@@ -19,3 +22,4 @@ games : [ {
         } ]
     } ]
 } ]
+```

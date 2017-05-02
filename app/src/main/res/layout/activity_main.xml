@@ -8,6 +8,16 @@
     tools:context="com.ottawa.treasurehunt.treasurehunt.MainActivity">
 
     <Button
+        android:id="@+id/button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/button3"
+        android:layout_marginTop="18dp"
+        android:onClick="onCheckpointClick"
+        android:text="Checkpoint" />
+
+    <Button
         android:id="@+id/mapButton"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
@@ -16,6 +26,16 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="36dp" />
+
+    <Button
+        android:id="@+id/miniGame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/button2"
+        android:onClick="onMiniClick"
+        android:text="Mini Game"
+        android:layout_marginTop="18dp" />
 
     <Button
         android:id="@+id/button3"

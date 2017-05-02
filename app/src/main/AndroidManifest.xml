@@ -30,7 +30,7 @@
         </activity>
         <activity
             android:name=".Play"
-            android:exported="true"></activity>
+            android:exported="true" />
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -46,7 +46,10 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps"></activity>
+            android:label="@string/title_activity_maps" />
+        <activity
+            android:name=".checkpoint.CheckpointActivity"
+            android:theme="@style/Theme.Fullscreen" />
     </application>
 
 </manifest>
