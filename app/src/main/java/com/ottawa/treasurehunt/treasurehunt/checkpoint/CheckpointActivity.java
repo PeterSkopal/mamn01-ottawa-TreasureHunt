@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.ottawa.treasurehunt.treasurehunt.Play;
 import com.ottawa.treasurehunt.treasurehunt.R;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
 import java.util.HashMap;
 
@@ -113,6 +115,8 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+                    Position position = Game.getPosition();
+                    Play.setLocation(position);
                     startActivity(
                             new Intent(getBaseContext(), Play.class));
                     finish();

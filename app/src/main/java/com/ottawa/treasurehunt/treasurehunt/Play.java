@@ -1,16 +1,22 @@
 package com.ottawa.treasurehunt.treasurehunt;
 
-import android.app.Service;
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,8 +32,11 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     private float[] mR = new float[9];
     private float[] mOrientation = new float[3];
     private Vibrator vibrator;
+    private LocationManager locationManager;
     private final static float LOWPASS_ALPHA = 0.10f;
     long pastTime = 0;
+    protected double currentLng = 0;
+    protected double currentLat = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +46,13 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LocationListener locationListener = new MyLocationListener();
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1337);
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
 
 
         // hardcoded JSON object
@@ -77,15 +93,37 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
 
             long spot = 200; // This is hardcoded TODO: get the real degree value gps coordinate and calculate bearing
-            long distance = 500;
-            long diff = Math.abs(spot - azimuthInDegrees);
+            double lat1, lat2, lng1, lng2;
+            lat1 = currentLat;
+            lng1 = currentLng;
+            lat2 = 13.212636;
+            lng2 = 55.713078;
+            double bearing = bearing(lat1, lng1, lat2, lng2);
+            long distance = 40;
 
+            long diff = Math.abs((long) (bearing - azimuthInDegrees));
             if (diff <= 30) {
-                if ((SystemClock.elapsedRealtime() - distance * 2) > pastTime) {
-                    long[] pattern = { distance, distance };
-                    Log.i("vibration", "Now it vibrates.");
-                    vibrator.vibrate(pattern, -1);
-                    pastTime = SystemClock.elapsedRealtime();
+                if (distance < 50) { //close distance
+                    if ((SystemClock.elapsedRealtime() - 250) > pastTime) {
+                        long[] pattern = { 210, 40};
+                        Log.i("vibration", "Now it vibrates Close.");
+                        vibrator.vibrate(pattern, -1);
+                        pastTime = SystemClock.elapsedRealtime();
+                    }
+                } else if (distance < 200) { //medium distance
+                    if ((SystemClock.elapsedRealtime() - 500) > pastTime) {
+                        long[] pattern = { 450, 50};
+                        Log.i("vibration", "Now it vibrates Medium.");
+                        vibrator.vibrate(pattern, -1);
+                        pastTime = SystemClock.elapsedRealtime();
+                    }
+                } else { //far distance
+                    if ((SystemClock.elapsedRealtime() - 1000) > pastTime) {
+                        long[] pattern = { 900, 100};
+                        Log.i("vibration", "Now it vibrates Far.");
+                        vibrator.vibrate(pattern, -1);
+                        pastTime = SystemClock.elapsedRealtime();
+                    }
                 }
             }
         }
@@ -96,6 +134,9 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
     }
 
+    public static void setLocation(Position position) {
+
+    }
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -155,6 +196,29 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         double x = Math.cos(l1) * Math.sin(l2) - Math.sin(l1) * Math.cos(l2) * Math.cos(longDiff);
 
         return (Math.toDegrees(Math.atan2(y, x))+360)%360;
+    }
+    private class MyLocationListener implements LocationListener {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            currentLat = location.getLatitude();
+            currentLng = location.getLongitude();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
     }
 }
 

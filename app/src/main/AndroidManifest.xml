@@ -30,6 +30,7 @@
         </activity>
         <activity
             android:name=".Play"
+            android:theme="@style/Theme.Fullscreen"
             android:exported="true" />
 
         <!--

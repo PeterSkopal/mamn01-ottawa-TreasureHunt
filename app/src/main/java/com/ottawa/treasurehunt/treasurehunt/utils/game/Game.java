@@ -44,7 +44,7 @@ public class Game {
         return checkpoints;
     }
 
-    public Position getPosition() {
+    public static Position getPosition() {
         return pos;
     }
 }
