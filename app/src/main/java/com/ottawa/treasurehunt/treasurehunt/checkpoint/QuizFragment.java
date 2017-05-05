@@ -1,9 +1,15 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,11 +22,33 @@ import com.ottawa.treasurehunt.treasurehunt.R;
 import java.util.HashMap;
 import java.util.Map;
 
-public class QuizFragment extends Fragment {
+public class QuizFragment extends Fragment implements SensorEventListener {
     private static final String QUESTION = "QUESTION";
     private static final String ANSWERS = "ANSWERS";
     private static final String QUIZ_NUM = "QUIZ_NUM";
     private static final String QUIZ_TOTAL = "QUIZ_TOTAL";
+
+    private static final int PROGRESS_TIMER = 600; // = PROGRESS_TIMER * 10ms = 6000ms
+
+    private static final float LOWPASS_ALPHA = 0.1f;
+    private static final float TILT_THRESHOLD = 5;
+    private static final long ACCEPT_CHOICE_TIME = 1500;
+    private static final long ACCEPT_CHOICE_VIBRATION_TIME = 50;
+
+    private SensorManager sensorManager;
+    private Sensor sensorAccel;
+    private Sensor sensorMagneto;
+    private Vibrator vibrator;
+    private float[] arrAccel = new float[3];
+    private float[] arrMagento = new float[3];
+    private float[] matRotation = new float[9];
+    private float[] vecOrientation = new float[3];
+    private float pitch;
+    private float roll;
+    private boolean hasAccel;
+    private boolean hasMagneto;
+    private long startTime;
+    private int currentChoiceBtn;
 
     private String question;
     private HashMap<String, Boolean> answers;
@@ -92,7 +120,7 @@ public class QuizFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_quiz, container, false);
 
-        txtQuizProgress = (TextView) view.findViewById(R.id.txtQuizProgress);
+        //txtQuizProgress = (TextView) view.findViewById(R.id.txtQuizProgress);
         progressTimeLeft = (ProgressBar) view.findViewById(R.id.progressTimeLeft);
         txtQuestion = (TextView) view.findViewById(R.id.txtQuestion);
         btns = new Button[]{
@@ -102,14 +130,16 @@ public class QuizFragment extends Fragment {
                 (Button) view.findViewById(R.id.btnAns4)
         };
 
-        txtQuizProgress.setText(String.format("%d / %d", quizNumber, quizNumberTotal));
+        //txtQuizProgress.setText(String.format("%d / %d", quizNumber, quizNumberTotal));
         txtQuestion.setText(question);
 
         int i = 0;
         for (Map.Entry<String, Boolean> entry : answers.entrySet()) {
-            btns[i].setOnClickListener(onAnswerClick);
+            //btns[i].setOnClickListener(onAnswerClick);
             btns[i++].setText(entry.getKey());
         }
+
+        progressTimeLeft.setMax(PROGRESS_TIMER);
 
         progressTimeHandler = new Handler();
         progressTimeRunnable = new Runnable() { // Progress timer, if progress = 100 then start next quiz
@@ -117,17 +147,30 @@ public class QuizFragment extends Fragment {
 
             @Override
             public void run() {
-                if (count <= 100) {
+                if (count <= PROGRESS_TIMER) {
                     progressTimeLeft.setProgress(count++);
-                    progressTimeHandler.postDelayed(this, 50);
+                    progressTimeHandler.postDelayed(this, 10);
                 } else {
                     progressTimeHandler.removeCallbacks(this);
-                    resCallback.callback(false);
+
+                    if (currentChoiceBtn > -1)
+                        chooseButton(currentChoiceBtn);
+                    else
+                        resCallback.callback(false);
                 }
             }
         };
 
         progressTimeRunnable.run();
+
+        sensorManager = (SensorManager) getActivity().getSystemService(
+                getActivity().SENSOR_SERVICE);
+
+        sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorMagneto = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        vibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+
+        currentChoiceBtn = -1; // default
 
         return view;
     }
@@ -148,5 +191,109 @@ public class QuizFragment extends Fragment {
         super.onDetach();
         resCallback = null;
         progressTimeHandler.removeCallbacks(progressTimeRunnable);
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensorAccel, SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, sensorMagneto, SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor == sensorAccel) {
+            arrAccel = lowPass(event.values.clone(), arrAccel);
+            hasAccel = true;
+        }
+
+        if (event.sensor == sensorMagneto) {
+            arrMagento = lowPass(event.values.clone(), arrMagento);
+            hasMagneto = true;
+        }
+
+        if (hasAccel && hasMagneto) {
+            SensorManager.getRotationMatrix(matRotation, null, arrAccel, arrMagento);
+            SensorManager.getOrientation(matRotation, vecOrientation);
+
+            pitch = vecOrientation[1] * 180f / (float) Math.PI;
+            roll = vecOrientation[2] * 180f / (float) Math.PI;
+
+            for (Button btn : btns) {
+                btn.setBackgroundColor(Color.GRAY);
+            }
+
+            if (pitch > TILT_THRESHOLD && roll < -TILT_THRESHOLD) { // TOP RIGHT
+                if (currentChoiceBtn != 0) {
+                    vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
+                    startTime = System.currentTimeMillis();
+                }
+
+                currentChoiceBtn = 0;
+                btns[0].setBackgroundColor(Color.CYAN);
+            } else if (pitch > TILT_THRESHOLD && roll > TILT_THRESHOLD) { // TOP LEFT
+                if (currentChoiceBtn != 1) {
+                    vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
+                    startTime = System.currentTimeMillis();
+                }
+
+                currentChoiceBtn = 1;
+                btns[1].setBackgroundColor(Color.CYAN);
+            } else if (pitch < -TILT_THRESHOLD && roll < -TILT_THRESHOLD) { // BOTTOM LEFT
+                if (currentChoiceBtn != 2) {
+                    vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
+                    startTime = System.currentTimeMillis();
+                }
+
+                currentChoiceBtn = 2;
+                btns[2].setBackgroundColor(Color.CYAN);
+            } else if (pitch < -TILT_THRESHOLD && roll > TILT_THRESHOLD) { // BOTTOM RIGHT
+                if (currentChoiceBtn != 3) {
+                    vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
+                    startTime = System.currentTimeMillis();
+                }
+
+                currentChoiceBtn = 3;
+                btns[3].setBackgroundColor(Color.CYAN);
+            } else {
+                currentChoiceBtn = -1;
+            }
+
+            if (currentChoiceBtn > -1 &&
+                    System.currentTimeMillis() - startTime > ACCEPT_CHOICE_TIME) {
+
+                sensorManager.unregisterListener(this);
+                progressTimeHandler.removeCallbacks(progressTimeRunnable);
+
+                chooseButton(currentChoiceBtn);
+            }
+        }
+    }
+
+    private void chooseButton(int num) {
+        if (answers.get(btns[currentChoiceBtn].getText()))
+            resCallback.callback(true); // answer was correct
+        else
+            resCallback.callback(false);
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+
+    private float[] lowPass(float[] input, float[] output) {
+        if (output == null) return input;
+
+        for (int i = 0; i < input.length; i++) {
+            output[i] = output[i] + LOWPASS_ALPHA * (input[i] - output[i]);
+        }
+
+        return output;
     }
 }
