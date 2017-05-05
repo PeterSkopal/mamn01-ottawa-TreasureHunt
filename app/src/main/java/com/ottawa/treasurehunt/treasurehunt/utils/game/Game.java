@@ -18,7 +18,7 @@ public class Game {
     @SerializedName("checkpoints")
     private ArrayList<Checkpoint> checkpoints;
     @SerializedName("position")
-    private Position pos;
+    private static Position pos;
 
     public Game(String name, String desc, ArrayList<Checkpoint> checkpoints, Position pos, int minigameId) {
         this.name = name;

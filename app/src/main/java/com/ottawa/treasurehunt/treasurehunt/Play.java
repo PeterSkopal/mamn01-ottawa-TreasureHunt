@@ -18,9 +18,6 @@ import android.util.Log;
 
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class Play extends AppCompatActivity implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -35,8 +32,10 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     private LocationManager locationManager;
     private final static float LOWPASS_ALPHA = 0.10f;
     long pastTime = 0;
-    protected double currentLng = 0;
-    protected double currentLat = 0;
+    protected double currentLat = 55.705738;
+    protected double currentLng = 13.209754;
+    private static double destLat = 55.710754;
+    private static double destLng = 13.210342;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,27 +51,7 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1337);
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
-
-
-        // hardcoded JSON object
-        JSONObject obj = new JSONObject();
-        JSONObject v1 = new JSONObject();
-        JSONObject v2 = new JSONObject();
-        JSONObject v3 = new JSONObject();
-        try {
-            v1.put("long", 55.714810);
-            v1.put("lat", 13.211906);
-            v2.put("long", 55.713573);
-            v2.put("lat", 13.211144);
-            v3.put("long", 55.713078);
-            v3.put("lat", 13.212636);
-            JSONObject[] array = {v1, v2, v3};
-            obj.put("checkpoints", array);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, locationListener);
     }
 
     @Override
@@ -92,35 +71,52 @@ public class Play extends AppCompatActivity implements SensorEventListener {
             long azimuthInDegrees = (long) (Math.toDegrees(azimuthInRadians) + 360) % 360;
 
 
-            long spot = 200; // This is hardcoded TODO: get the real degree value gps coordinate and calculate bearing
-            double lat1, lat2, lng1, lng2;
-            lat1 = currentLat;
-            lng1 = currentLng;
-            lat2 = 13.212636;
-            lng2 = 55.713078;
-            double bearing = bearing(lat1, lng1, lat2, lng2);
-            long distance = 40;
-
+            double distance = distFrom(currentLat, currentLng, destLat, destLng);
+            double bearing = bearing(currentLat, currentLng, destLat, destLng);
             long diff = Math.abs((long) (bearing - azimuthInDegrees));
             if (diff <= 30) {
                 if (distance < 50) { //close distance
                     if ((SystemClock.elapsedRealtime() - 250) > pastTime) {
+
+                        Log.i("distance:", " " + distance);
+                        Log.i("bearing:", " " + bearing);
+                        Log.i("currentAzimuth:", " " + azimuthInDegrees);
+                        Log.i("currentLat:", " " + currentLat);
+                        Log.i("currentLng:", " " + currentLng);
+                        Log.i("destLat:", " " + destLat);
+                        Log.i("destLng:", " " + destLng);
+
                         long[] pattern = { 210, 40};
-                        Log.i("vibration", "Now it vibrates Close.");
                         vibrator.vibrate(pattern, -1);
                         pastTime = SystemClock.elapsedRealtime();
                     }
                 } else if (distance < 200) { //medium distance
                     if ((SystemClock.elapsedRealtime() - 500) > pastTime) {
-                        long[] pattern = { 450, 50};
-                        Log.i("vibration", "Now it vibrates Medium.");
+
+                        Log.i("distance:", " " + distance);
+                        Log.i("bearing:", " " + bearing);
+                        Log.i("currentAzimuth:", " " + azimuthInDegrees);
+                        Log.i("currentLat:", " " + currentLat);
+                        Log.i("currentLng:", " " + currentLng);
+                        Log.i("destLat:", " " + destLat);
+                        Log.i("destLng:", " " + destLng);
+
+                        long[] pattern = { 450, 50 };
                         vibrator.vibrate(pattern, -1);
                         pastTime = SystemClock.elapsedRealtime();
                     }
                 } else { //far distance
                     if ((SystemClock.elapsedRealtime() - 1000) > pastTime) {
+
+                        Log.i("distance:", " " + distance);
+                        Log.i("bearing:", " " + bearing);
+                        Log.i("currentAzimuth:", " " + azimuthInDegrees);
+                        Log.i("currentLat:", " " + currentLat);
+                        Log.i("currentLng:", " " + currentLng);
+                        Log.i("destLat:", " " + destLat);
+                        Log.i("destLng:", " " + destLng);
+
                         long[] pattern = { 900, 100};
-                        Log.i("vibration", "Now it vibrates Far.");
                         vibrator.vibrate(pattern, -1);
                         pastTime = SystemClock.elapsedRealtime();
                     }
@@ -135,8 +131,10 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     }
 
     public static void setLocation(Position position) {
-
+        destLat = position.getLatitude();
+        destLng = position.getLongitude();
     }
+
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -168,7 +166,7 @@ public class Play extends AppCompatActivity implements SensorEventListener {
      * @param lng2 checkpoint longitude
      * @return distance to checkpoint
      */
-    private static float distFrom(float lat1, float lng1, float lat2, float lng2) {
+    private static double distFrom(double lat1, double lng1, double lat2, double lng2) {
         double earthRadius = 6371000; //meters
         double dLat = Math.toRadians(lat2 - lat1);
         double dLng = Math.toRadians(lng2 - lng1);
@@ -178,6 +176,18 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return (float) (earthRadius * c);
+    }
+
+    /**
+     * Kanske inte nödvändig
+     * @param lat1
+     * @param lng1
+     * @param lat2
+     * @param lng2
+     * @return
+     */
+    private static double euclideanDist(double lat1, double lng1, double lat2, double lng2) {
+        return (6371000 / 360) * Math.sqrt(Math.pow(lat1 - lat2, 2) + Math.pow(lng1 - lng2, 2));
     }
 
     /**
@@ -194,9 +204,9 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         double longDiff = Math.toRadians(lng2 - lng1);
         double y = Math.sin(longDiff) * Math.cos(l2);
         double x = Math.cos(l1) * Math.sin(l2) - Math.sin(l1) * Math.cos(l2) * Math.cos(longDiff);
-
-        return (Math.toDegrees(Math.atan2(y, x))+360)%360;
+        return (Math.toDegrees(Math.atan2(y, x)) + 360) % 360;
     }
+
     private class MyLocationListener implements LocationListener {
 
         @Override
