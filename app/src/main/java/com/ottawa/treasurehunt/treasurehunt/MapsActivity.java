@@ -2,6 +2,7 @@ package com.ottawa.treasurehunt.treasurehunt;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -10,9 +11,9 @@ import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,7 +21,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
@@ -41,6 +41,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         button = (Button) findViewById(R.id.startBtn);
         button.setVisibility(View.GONE);
         mapFragment.getMapAsync(this);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("To play, simply walk up to a Game Marker and await the Start Game button.")
+                .setTitle("Welcome!")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //do things
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
 
