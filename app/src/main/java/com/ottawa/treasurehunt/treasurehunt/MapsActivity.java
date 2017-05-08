@@ -28,8 +28,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locationManager;
     private Button button;
 
-    private double destLat = 55.711410;
-    private double destLng = 13.208124;
+    private double destLat = 55.714669;
+    private double destLng = 13.211825;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
