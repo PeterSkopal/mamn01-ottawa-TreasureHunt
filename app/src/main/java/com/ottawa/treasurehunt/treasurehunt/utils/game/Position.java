@@ -6,21 +6,21 @@ import com.google.gson.annotations.SerializedName;
  * Created by Edvin Havic on 2017-04-28.
  */
 public class Position {
-    @SerializedName("long")
-    private long lon;
     @SerializedName("lat")
-    private long lat;
+    private double lat;
+    @SerializedName("long")
+    private double lon;
 
-    public Position(long lon, long lat) {
-        this.lon = lon;
+    public Position(long lat, long lon) {
         this.lat = lat;
+        this.lon = lon;
     }
 
-    public long getLatitude() {
+    public double getLatitude() {
         return lat;
     }
 
-    public long getLongitude() {
+    public double getLongitude() {
         return lon;
     }
 }
