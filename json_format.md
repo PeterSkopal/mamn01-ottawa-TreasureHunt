@@ -1,25 +1,37 @@
 ```
-games : [ {
-    name : string,
-    description : string,
+{
+"games" : [ {
+    "id" : 1,
+    "name" : "first game",
+    "description" : "This is our test game",
 
-    position: {
-        long : double,
-        lat : double
+    "position": {
+      "lat" : 55.711410,
+	    "long" : 13.208124
     },
-    checkpoints: [ {
-        position: {
-            long : double,
-            lat : double
+    "checkpoints" : [ {
+        "position" : {
+            "lat" : 55.710956,
+            "long" : 13.208269
         },
-        minigame : id,
-        quiz : [ {
-            answers : [ {
-                answer : string,
-                correct : bool
+        "minigame" : null,
+        "quiz" : [ {
+            "answers" : [ {
+                  "answer" : "190 m",
+                  "correct" : true
+                }, {
+                  "answer" : "160 m",
+                  "correct" : false
+                }, {
+                  "answer" : "220 m",
+                  "correct" : false
+                }, {
+                  "answer" : "260 m",
+                  "correct" : false
                 } ],
-            question : string
+            "question" : "How tall is the Turning Torso?"
         } ]
     } ]
 } ]
+}
 ```

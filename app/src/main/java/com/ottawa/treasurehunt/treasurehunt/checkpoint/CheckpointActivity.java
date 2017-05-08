@@ -1,6 +1,7 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
     public static final String QUIZ_ANSWERS = "GAME_QUIZ_ANSWERS";
 
     private String gameType;
+    private Play play;
 
     Fragment[] quizFragments;
     int currentQuiz;
@@ -115,8 +117,7 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Position position = Game.getPosition();
-                    Play.setLocation(position);
+                    Play.nextCheckpoint();
                     startActivity(
                             new Intent(getBaseContext(), Play.class));
                     finish();

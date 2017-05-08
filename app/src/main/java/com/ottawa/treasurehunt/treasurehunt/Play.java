@@ -2,6 +2,7 @@ package com.ottawa.treasurehunt.treasurehunt;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -16,7 +17,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
+import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Stack;
 
 public class Play extends AppCompatActivity implements SensorEventListener {
     private SensorManager mSensorManager;
@@ -33,12 +47,15 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     private final static float LOWPASS_ALPHA = 0.10f;
     long pastTime = 0;
     private int gameID;
+    private static Game game = null;
+    private static Stack<Checkpoint> checkpointStack;
+    private static Checkpoint currentCheckpoint;
+    private static boolean gameFinished = false;
 
     protected double currentLat = 55.705738;
     protected double currentLng = 13.209754;
     private static double destLat = 55.710754;
     private static double destLng = 13.210342;
-
     public static final String GAMEID = "GameID";
 
     @Override
@@ -47,7 +64,8 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         setContentView(R.layout.activity_play);
 
         Bundle bundle = getIntent().getExtras();
-        gameID = bundle.getInt(GAMEID);
+        if (bundle != null)
+            gameID = bundle.getInt(GAMEID);
 
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -55,14 +73,85 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         LocationListener locationListener = new MyLocationListener();
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1337);
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1337);
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, locationListener);
+
+        //TODO: get the string value from the localstorage, or server
+        String string = "{\n" +
+                "    \"id\" : 1,\n" +
+                "    \"name\" : \"first game\",\n" +
+                "    \"description\" : \"This is our test game\",\n" +
+                "\n" +
+                "    \"position\": {\n" +
+                "      \"lat\" : 55.711410,\n" +
+                "\t    \"long\" : 13.208124\n" +
+                "    },\n" +
+                "    \"checkpoints\" : [ {\n" +
+                "        \"position\" : {\n" +
+                "            \"lat\" : 55.714294,\n" +
+                "            \"long\" : 13.210682\n" +
+                "        },\n" +
+                "        \"minigame\" : null,\n" +
+                "        \"quiz\" : [ {\n" +
+                "            \"answers\" : [ {\n" +
+                "                  \"answer\" : \"190 m\",\n" +
+                "                  \"correct\" : true\n" +
+                "                }, {\n" +
+                "                  \"answer\" : \"160 m\",\n" +
+                "                  \"correct\" : false\n" +
+                "                }, {\n" +
+                "                  \"answer\" : \"220 m\",\n" +
+                "                  \"correct\" : false\n" +
+                "                }, {\n" +
+                "                  \"answer\" : \"260 m\",\n" +
+                "                  \"correct\" : false\n" +
+                "                } ],\n" +
+                "            \"question\" : \"How tall is the Turning Torso?\"\n" +
+                "        } ]\n" +
+                "    } ]\n" +
+                "}";
+
+
+
+
+        try {
+            game = Parser.generateGame(string);
+            Log.i("success", "success");
+        } catch (Exception e) {
+            Log.e("Parser error", e.toString());
+        }
+        checkpointStack = new Stack<Checkpoint>();
+        checkpointStack.addAll(game.getCheckpoints());
+        nextCheckpoint();
+    }
+
+    public static String convertStreamToString(InputStream is) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line).append("\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    public static String getStringFromFile (String filePath) throws Exception {
+        File fl = new File(filePath);
+        FileInputStream fin = new FileInputStream(fl);
+        String ret = convertStreamToString(fin);
+        //Make sure you close all streams.
+        fin.close();
+        return ret;
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (gameFinished)
+            startActivity(new Intent(this, MainActivity.class));
+
         if (event.sensor == mAccelerometer) {
             mLastAccelerometerSet = true;
             mLastAccelerometer = lowPass(event.values.clone(), mLastAccelerometer);
@@ -81,6 +170,41 @@ public class Play extends AppCompatActivity implements SensorEventListener {
             double distance = distFrom(currentLat, currentLng, destLat, destLng);
             double bearing = bearing(currentLat, currentLng, destLat, destLng);
             long diff = Math.abs((long) (bearing - azimuthInDegrees));
+
+            if (distance < 10) {
+                Intent i = new Intent(this, CheckpointActivity.class);
+                i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
+
+                String[] questions = new String[]{
+                        "How tall is the Turning Torso?",
+                        "Where's the headquarters of the automotive company Tesla located?"
+                };
+
+                i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
+
+                HashMap<String, Boolean> firstQAnswers = new HashMap<>();
+                firstQAnswers.put("152m", false);
+                firstQAnswers.put("212m", false);
+                firstQAnswers.put("173m", false);
+                firstQAnswers.put("190m", true);
+
+                HashMap<String, Boolean> secondQAnswers = new HashMap<>();
+                secondQAnswers.put("Los Angeles, California", false);
+                secondQAnswers.put("Palo Alto, California", true);
+                secondQAnswers.put("San Fransisco, California", false);
+                secondQAnswers.put("Silicon Valley, California", false);
+
+                @SuppressWarnings("unchecked")
+                HashMap<String, Boolean>[] answers = new HashMap[]{
+                        firstQAnswers,
+                        secondQAnswers
+                };
+
+                i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
+
+                this.startActivity(i);
+            }
+
             if (diff <= 30) {
                 if (distance < 50) { //close distance
                     if ((SystemClock.elapsedRealtime() - 250) > pastTime) {
@@ -137,16 +261,22 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
     }
 
-    public static void setLocation(Position position) {
-        destLat = position.getLatitude();
-        destLng = position.getLongitude();
+    public static void nextCheckpoint() {
+        Checkpoint cp = checkpointStack.pop();
+        if (cp != null) {
+            currentCheckpoint = cp;
+            destLng = cp.getPos().getLongitude();
+            destLat = cp.getPos().getLatitude();
+        } else {
+            Log.i("GAME STATUS", "FINISHED");
+            gameFinished = true;
+        }
     }
 
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
-
     }
 
     protected void onPause() {
@@ -208,6 +338,7 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         public void onLocationChanged(Location location) {
             currentLat = location.getLatitude();
             currentLng = location.getLongitude();
+            Log.i("MyLocationListener", "Location changed!");
         }
 
         @Override
