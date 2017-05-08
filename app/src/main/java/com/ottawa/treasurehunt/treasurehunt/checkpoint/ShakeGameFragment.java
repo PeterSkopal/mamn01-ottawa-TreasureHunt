@@ -1,6 +1,7 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -35,6 +36,7 @@ public class ShakeGameFragment extends Fragment implements SensorEventListener{
     private boolean finished = false;
     private ProgressBar progressBar;
     private Vibrator vibrator;
+    private IResultCallback resCallback;
 
     private int DIFFICULTY = 1000;
 
@@ -124,17 +126,18 @@ public class ShakeGameFragment extends Fragment implements SensorEventListener{
             // Win condition
             if (progressBar.getProgress() >= DIFFICULTY && !finished) {
                 finished = true;
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                        .setCancelable(false)
-                        .setMessage("Mini Game finished!")
-                        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(getActivity().getBaseContext(), MainActivity.class);
-                                startActivity(intent);
-                            }
-                        });
-                AlertDialog alert = builder.create();
-                alert.show();
+                //AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                //        .setCancelable(false)
+                //        .setMessage("Mini Game finished!")
+                //        .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                //            public void onClick(DialogInterface dialog, int which) {
+                //                Intent intent = new Intent(getActivity().getBaseContext(), MainActivity.class);
+                //                startActivity(intent);
+                //            }
+                //        });
+                //AlertDialog alert = builder.create();
+                //alert.show();
+                resCallback.callback(true);
             }
         }
     }
@@ -142,6 +145,24 @@ public class ShakeGameFragment extends Fragment implements SensorEventListener{
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof IResultCallback) {
+            resCallback = (IResultCallback) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement IResultCallback");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        resCallback = null;
+        sensorManager.unregisterListener(this);
     }
 
     @Override
