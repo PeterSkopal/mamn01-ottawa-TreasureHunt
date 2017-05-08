@@ -32,20 +32,27 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     private LocationManager locationManager;
     private final static float LOWPASS_ALPHA = 0.10f;
     long pastTime = 0;
+    private int gameID;
+
     protected double currentLat = 55.705738;
     protected double currentLng = 13.209754;
     private static double destLat = 55.710754;
     private static double destLng = 13.210342;
 
+    public static final String GAMEID = "GameID";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
+
+        Bundle bundle = getIntent().getExtras();
+        gameID = bundle.getInt(GAMEID);
+
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         LocationListener locationListener = new MyLocationListener();
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -176,18 +183,6 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         return (float) (earthRadius * c);
-    }
-
-    /**
-     * Kanske inte nödvändig
-     * @param lat1
-     * @param lng1
-     * @param lat2
-     * @param lng2
-     * @return
-     */
-    private static double euclideanDist(double lat1, double lng1, double lat2, double lng2) {
-        return (6371000 / 360) * Math.sqrt(Math.pow(lat1 - lat2, 2) + Math.pow(lng1 - lng2, 2));
     }
 
     /**
