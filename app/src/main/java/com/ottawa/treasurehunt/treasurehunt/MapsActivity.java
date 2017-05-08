@@ -20,16 +20,20 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+import java.util.HashMap;
+import java.util.Map;
 
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
     private GoogleMap mMap;
     private LocationManager locationManager;
     private Button button;
 
-    private double destLat = 55.714669;
-    private double destLng = 13.211825;
+    private HashMap<Marker, Integer> gameMarkers;
+    private boolean centerOnce;
+    private int standingOnGameId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +50,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         builder.setMessage("To play, simply walk up to a Game Marker and await the Start Game button.")
                 .setTitle("Welcome!")
                 .setCancelable(false)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //do things
-                    }
-                });
+                .setPositiveButton("OK", null);
         AlertDialog alert = builder.create();
         alert.show();
+
+        gameMarkers = new HashMap<>();
+        centerOnce = false;
     }
 
 
@@ -68,12 +71,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        LatLng OnOn = new LatLng(destLat, destLng);
-
 
         //TODO: put all the markers from all the json game IDs, both on map and hashmap
-        mMap.addMarker(new MarkerOptions().position(OnOn).title("First Game"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(OnOn, 17.0f));
+        //TODO: JSON thing is now needed
+        Marker m = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(55.714669, 13.211825)).title("First Game"));
+        gameMarkers.put(m, 1);
+
+        m = mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(55.721001, 13.210863)).title("Delphi's Game"));
+        gameMarkers.put(m, 2);
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         enableMyLocation();
@@ -81,7 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void onStartPress(View v) {
         Intent i = new Intent(this, Play.class);
-        i.putExtra(Play.GAMEID, 1);
+        i.putExtra(Play.GAMEID, standingOnGameId);
         this.startActivity(i);
     }
 
@@ -107,11 +114,41 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
+        /*
         double distance = distFrom(location.getLatitude(), location.getLongitude(), destLat, destLng);
         if (distance < 25) {
             button.setVisibility(View.VISIBLE);
         } else {
             button.setVisibility(View.GONE);
+        }
+        */
+
+        /*
+         * When out location is updated we go through our markers to see if we're standing on top of
+         * a marker. If we're standing on a marker we show the START GAME button and set
+         * `standingOnGameId` value to the marker's gameId, when the user presses START GAME, we
+         * launch the Play activity with `standingOnGameId` id, see `onStartPress`.
+         */
+        for (Map.Entry<Marker, Integer> e : gameMarkers.entrySet()) {
+            double distance = distFrom(
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    e.getKey().getPosition().latitude,
+                    e.getKey().getPosition().longitude);
+
+            if (distance < 25) {
+                button.setVisibility(View.VISIBLE);
+                standingOnGameId = e.getValue();
+                break;
+            } else {
+                button.setVisibility(View.INVISIBLE);
+            }
+        }
+
+        if (!centerOnce) { /* This is used ¿instead? of implementing onConnected and onDisconnected (I believe) */
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(location.getLatitude(), location.getLongitude()), 17.0f));
+            centerOnce = true;
         }
     }
 
