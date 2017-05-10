@@ -13,14 +13,15 @@ import com.ottawa.treasurehunt.treasurehunt.R;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class CheckpointActivity extends FragmentActivity implements IResultCallback {
     public static final String GAME_TYPE = "GAME_TYPE";
 
     public static final String MINIGAME = "GAME_MINIGAME";
     public static final String MINIGAME_ID = "GAME_MINIGAME_ID";
-    public static final int MINIGAME_SHAKE = 0;
 
     public static final String QUIZ = "GAME_QUIZ";
     public static final String QUIZ_QUESTIONS = "GAME_QUIZ_QUESTION";
@@ -50,11 +51,24 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
         if (bundle.getString(GAME_TYPE).equals(MINIGAME)) {
             int id = bundle.getInt(MINIGAME_ID); // launch minigame with this id
 
-            Fragment miniGameFragment = new ShakeGameFragment();
+            Fragment miniGameFragment;
+            switch (id) {
+                case 1:
+                    miniGameFragment = new ShakeGameFragment();
+                    break;
+                case 2:
+                    miniGameFragment = new WindGameFragment();
+                    break;
+                default:
+                    miniGameFragment = null;
+            }
 
-            setFragment(miniGameFragment);
+            if (miniGameFragment != null) {
+                setFragment(miniGameFragment);
+            } else {
+                callback(true);
+            }
 
-            // example: setFragment(minigameFragments[id].newInstance());
         } else if (bundle.getString(GAME_TYPE).equals(QUIZ)) {
             String[] question = bundle.getStringArray(QUIZ_QUESTIONS);
 

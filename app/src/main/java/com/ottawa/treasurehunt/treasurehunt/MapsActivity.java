@@ -75,7 +75,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //TODO: put all the markers from all the json game IDs, both on map and hashmap
         //TODO: JSON thing is now needed
         Marker m = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(55.714669, 13.211825)).title("First Game"));
+                .position(new LatLng(55.711165, 13.207776)).title("First Game"));
         gameMarkers.put(m, 1);
 
         m = mMap.addMarker(new MarkerOptions()

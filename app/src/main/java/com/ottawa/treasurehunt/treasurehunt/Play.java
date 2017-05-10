@@ -21,6 +21,7 @@ import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
 import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Minigame;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
 import java.io.BufferedReader;
@@ -85,13 +86,13 @@ public class Play extends AppCompatActivity implements SensorEventListener {
                 "    \"description\" : \"This is our test game\",\n" +
                 "\n" +
                 "    \"position\": {\n" +
-                "      \"lat\" : 55.711410,\n" +
-                "\t    \"long\" : 13.208124\n" +
+                "      \"lat\" : 55.711165,\n" +
+                "\t    \"long\" : 13.207776\n" +
                 "    },\n" +
                 "    \"checkpoints\" : [ {\n" +
                 "        \"position\" : {\n" +
-                "            \"lat\" : 55.714294,\n" +
-                "            \"long\" : 13.210682\n" +
+                "            \"lat\" : 55.710977,\n" +
+                "            \"long\" : 13.208388\n" +
                 "        },\n" +
                 "        \"minigame\" : null,\n" +
                 "        \"quiz\" : [ {\n" +
@@ -110,14 +111,23 @@ public class Play extends AppCompatActivity implements SensorEventListener {
                 "                } ],\n" +
                 "            \"question\" : \"How tall is the Turning Torso?\"\n" +
                 "        } ]\n" +
-                "    } ]\n" +
-                "}";
-
-
+                "    },\n" +
+                "    {\n" +
+                "        \"position\" : {\n" +
+                "            \"lat\" : 55.710802,\n" +
+                "            \"long\" : 13.207390\n" +
+                "        },\n" +
+                "        \"minigame\" : 1,\n" +
+                "        \"quiz\" : null\n" +
+                "      } ]\n" +
+                "  }";
 
 
         try {
             game = Parser.generateGame(string);
+            if (game == null) {
+                throw new Exception("this is crazy");
+            }
             Log.i("success", "success");
         } catch (Exception e) {
             Log.e("Parser error", e.toString());
@@ -125,26 +135,6 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         checkpointStack = new Stack<Checkpoint>();
         checkpointStack.addAll(game.getCheckpoints());
         nextCheckpoint();
-    }
-
-    public static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        reader.close();
-        return sb.toString();
-    }
-
-    public static String getStringFromFile (String filePath) throws Exception {
-        File fl = new File(filePath);
-        FileInputStream fin = new FileInputStream(fl);
-        String ret = convertStreamToString(fin);
-        //Make sure you close all streams.
-        fin.close();
-        return ret;
     }
 
     @Override
@@ -173,34 +163,43 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
             if (distance < 10) {
                 Intent i = new Intent(this, CheckpointActivity.class);
-                i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
 
-                String[] questions = new String[]{
-                        "How tall is the Turning Torso?",
-                        "Where's the headquarters of the automotive company Tesla located?"
-                };
+                if (currentCheckpoint.getMinigameId() != 0) { //if minigame
+                    int gameId = currentCheckpoint.getMinigameId();
+                    i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
+                    i.putExtra(CheckpointActivity.MINIGAME_ID, gameId);
 
-                i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
+                } else { //if quiz
+                    i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
+                    String[] questions = new String[]{
+                            "How tall is the Turning Torso?",
+                            "Where's the headquarters of the automotive company Tesla located?"
+                    };
 
-                HashMap<String, Boolean> firstQAnswers = new HashMap<>();
-                firstQAnswers.put("152m", false);
-                firstQAnswers.put("212m", false);
-                firstQAnswers.put("173m", false);
-                firstQAnswers.put("190m", true);
+                    i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
 
-                HashMap<String, Boolean> secondQAnswers = new HashMap<>();
-                secondQAnswers.put("Los Angeles, California", false);
-                secondQAnswers.put("Palo Alto, California", true);
-                secondQAnswers.put("San Fransisco, California", false);
-                secondQAnswers.put("Silicon Valley, California", false);
+                    HashMap<String, Boolean> firstQAnswers = new HashMap<>();
+                    firstQAnswers.put("152m", false);
+                    firstQAnswers.put("212m", false);
+                    firstQAnswers.put("173m", false);
+                    firstQAnswers.put("190m", true);
 
-                @SuppressWarnings("unchecked")
-                HashMap<String, Boolean>[] answers = new HashMap[]{
-                        firstQAnswers,
-                        secondQAnswers
-                };
+                    HashMap<String, Boolean> secondQAnswers = new HashMap<>();
+                    secondQAnswers.put("Los Angeles, California", false);
+                    secondQAnswers.put("Palo Alto, California", true);
+                    secondQAnswers.put("San Fransisco, California", false);
+                    secondQAnswers.put("Silicon Valley, California", false);
 
-                i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
+                    @SuppressWarnings("unchecked")
+                    HashMap<String, Boolean>[] answers = new HashMap[]{
+                            firstQAnswers,
+                            secondQAnswers
+                    };
+
+                    i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
+                }
+
+
 
                 this.startActivity(i);
             }
