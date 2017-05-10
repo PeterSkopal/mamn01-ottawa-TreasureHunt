@@ -3,6 +3,7 @@ package com.ottawa.treasurehunt.treasurehunt.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Games;
 
 /**
  * Created by Edvin Havic on 2017-04-28.

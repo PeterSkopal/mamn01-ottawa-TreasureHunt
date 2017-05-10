@@ -1,5 +1,7 @@
 package com.ottawa.treasurehunt.treasurehunt.utils.game;
 
+import android.util.Log;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -9,24 +11,26 @@ import java.util.ArrayList;
  */
 
 public class Game {
+    @SerializedName("id")
+    private int id;
     @SerializedName("name")
     private String name;
     @SerializedName("description")
     private String desc;
-    @SerializedName("minigame")
-    private int minigameId;
     @SerializedName("checkpoints")
     private ArrayList<Checkpoint> checkpoints;
     @SerializedName("position")
     private static Position pos;
 
-    public Game(String name, String desc, ArrayList<Checkpoint> checkpoints, Position pos, int minigameId) {
+    public Game(int id, String name, String desc, ArrayList<Checkpoint> checkpoints, Position pos) {
+        this.id = id;
         this.name = name;
         this.desc = desc;
         this.checkpoints = checkpoints;
         this.pos = pos;
-        this.minigameId = minigameId;
     }
+
+    public int getId() { return id; }
 
     public String getName() {
         return name;
@@ -34,10 +38,6 @@ public class Game {
 
     public String getDescription() {
         return desc;
-    }
-
-    public int getMinigameId() {
-        return minigameId;
     }
 
     public ArrayList<Checkpoint> getCheckpoints() {

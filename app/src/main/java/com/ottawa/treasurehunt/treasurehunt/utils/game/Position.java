@@ -1,5 +1,7 @@
 package com.ottawa.treasurehunt.treasurehunt.utils.game;
 
+import android.util.Log;
+
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -11,7 +13,7 @@ public class Position {
     @SerializedName("long")
     private double lon;
 
-    public Position(long lat, long lon) {
+    public Position(double lat, double lon) {
         this.lat = lat;
         this.lon = lon;
     }
