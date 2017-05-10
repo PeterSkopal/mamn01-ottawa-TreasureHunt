@@ -2,8 +2,8 @@ package com.ottawa.treasurehunt.treasurehunt;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -56,6 +56,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         gameMarkers = new HashMap<>();
         centerOnce = false;
+
+        SharedPreferences prefs = getSharedPreferences(Play.PREFS, Context.MODE_PRIVATE);
+        prefs.edit().clear().commit();
     }
 
 

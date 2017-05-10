@@ -25,7 +25,6 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
     public static final String QUIZ_ANSWERS = "GAME_QUIZ_ANSWERS";
 
     private String gameType;
-    private Play play;
 
     Fragment[] quizFragments;
     int currentQuiz;
@@ -119,18 +118,13 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
                 }
             }, 2000);
         } else {
-            // no more quiz fragments or we're a mini-game
-            // collect and store the points
-            // return to Play activity
-
             setFragment(ResultSplash.newInstance(answeredCorrect));
 
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Play.nextCheckpoint();
                     startActivity(
-                            new Intent(getBaseContext(), Play.class));
+                            new Intent(getApplicationContext(), Play.class));
                     finish();
                 }
             }, 2000);
