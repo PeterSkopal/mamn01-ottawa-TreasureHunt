@@ -47,4 +47,15 @@
         android:onClick="onPlayClick"
         android:text="Compass"
         app:layout_constraintTop_toBottomOf="@+id/mapButton" />
+
+    <Button
+        android:id="@+id/MiniGame2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/miniGame"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:onClick="onMini2Click"
+        android:text="Mini Game 2"
+        app:layout_constraintTop_toBottomOf="@+id/miniGame" />
 </RelativeLayout>

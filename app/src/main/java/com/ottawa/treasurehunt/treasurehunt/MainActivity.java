@@ -1,9 +1,11 @@
 package com.ottawa.treasurehunt.treasurehunt;
 
+//import android.app.ActionBar;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.support.v7.app.ActionBar;
 
 import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
 
@@ -70,5 +72,28 @@ public class MainActivity extends AppCompatActivity {
 
 
         this.startActivity(i);
+    }
+
+    public void onMini2Click (View v) {
+        //  Intent i = new Intent(this, ShakeGameActivity.class);
+        Intent i = new Intent(this, CheckpointActivity.class);
+        i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
+        i.putExtra(CheckpointActivity.MINIGAME_ID, CheckpointActivity.MINIGAME_FEATHER);
+
+
+        this.startActivity(i);
+    }
+
+    public void onResume(){
+        super.onResume();
+        //Hide the status bar
+        View decorView = getWindow().getDecorView();
+        // Hide the status bar.
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
+        // Remember that you should never show the action bar if the
+        // status bar is hidden, so hide that too if necessary.
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
     }
 }
