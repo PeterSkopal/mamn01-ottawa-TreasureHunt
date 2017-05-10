@@ -2,18 +2,12 @@ package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.app.Fragment;
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.support.constraint.ConstraintLayout;
 import android.view.LayoutInflater;
 import android.view.*;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,9 +16,10 @@ import com.ottawa.treasurehunt.treasurehunt.R;
 
 // Based on http://androidexample.com/Detect_Noise_Or_Blow_Sound_-_Set_Sound_Frequency_Thersold/index.php?view=article_discription&aid=108&aaid=130
 
-public class WindGameFragment extends Fragment implements SensorEventListener{
+public class WindGameFragment extends Fragment{
     /* constants */
-    private static final int POLL_INTERVAL = 300;
+    private static final int POLL_INTERVAL = 150;
+    private static float ALPHA = 0.35f; // if ALPHA = 1 OR 0, no filter applies.
 
     /** running state **/
     private boolean mRunning = false;
@@ -44,11 +39,13 @@ public class WindGameFragment extends Fragment implements SensorEventListener{
     private SoundMeter soundSensor;
 
     private IResultCallback resCallback;
-    private SensorManager sensorManager;
+
+    private float output[] = new float[1];
+    private float posY = 0;
 
     /****************** Define runnable thread again and again detect noise *********/
 
-    /**
+
     private Runnable mSleepTask = new Runnable() {
         public void run() {
             //Log.i("Noise", "runnable mSleepTask");
@@ -56,17 +53,20 @@ public class WindGameFragment extends Fragment implements SensorEventListener{
             start();
         }
     };
-    */
+
 
     // Create runnable thread to Monitor Voice
     private Runnable mPollTask = new Runnable() {
         public void run() {
 
             double amp = soundSensor.getAmplitude();
-            //Log.i("Noise", "runnable mPollTask");
-            updateDisplay("Monitoring Voice... " + String.valueOf(amp), amp);
 
-            if ((amp > mThreshold)) {
+            float input[] = {(float)amp};
+            lowPass(input, output);
+            //Log.i("Noise", "runnable mPollTask");
+            updateDisplay("Monitoring Voice... " + String.valueOf(output[0]), output[0]);
+
+            if ((output[0] > mThreshold)) {
                 callForHelp();
                 //Log.i("Noise", "==== onCreate ===");
 
@@ -105,16 +105,6 @@ public class WindGameFragment extends Fragment implements SensorEventListener{
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
-
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
-
-    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof IResultCallback) {
@@ -129,7 +119,7 @@ public class WindGameFragment extends Fragment implements SensorEventListener{
     public void onDetach() {
         super.onDetach();
         resCallback = null;
-        sensorManager.unregisterListener(this);
+        onStop();
     }
 
     private void initializeApplicationConstants() {
@@ -152,25 +142,72 @@ public class WindGameFragment extends Fragment implements SensorEventListener{
         // Show alert when noise thersold crossed
         Toast.makeText(getContext().getApplicationContext(), "Noise Thersold Crossed, do here your stuff.",
                 Toast.LENGTH_LONG).show();
+
+        posY = featherView.getY()-40;
+        featherView.setY(posY);
+
+        if(featherView.getY() <= 10){
+            stop();
+            resCallback.callback(true);
+        }
     }
 
-    private class MyAnimationListener implements Animation.AnimationListener {
+    @Override
+    public void onResume() {
+        super.onResume();
+        //Log.i("Noise", "==== onResume ===");
 
-        @Override
-        public void onAnimationEnd(Animation animation) {
-            featherView.clearAnimation();
-            ConstraintLayout.LayoutParams lp = new ConstraintLayout.LayoutParams(featherView.getWidth(), featherView.getHeight());
-            lp.setMargins(50, 100, 0, 0);
-            featherView.setLayoutParams(lp);
+        initializeApplicationConstants();
+        //mDisplay.setLevel(0, mThreshold);
+
+        if (!mRunning) {
+            mRunning = true;
+            start();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        // Log.i("Noise", "==== onStop ===");
+
+        //Stop noise monitoring
+        stop();
+
+    }
+
+    private void start() {
+        //Log.i("Noise", "==== start ===");
+
+        soundSensor.start();
+        if (!mWakeLock.isHeld()) {
+            mWakeLock.acquire();
         }
 
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-        }
+        //Noise monitoring start
+        // Runnable(mPollTask) will execute after POLL_INTERVAL
+        mHandler.postDelayed(mPollTask, POLL_INTERVAL);
+    }
 
-        @Override
-        public void onAnimationStart(Animation animation) {
+    private void stop() {
+        //Log.i("Noise", "==== Stop Noise Monitoring===");
+        if (mWakeLock.isHeld()) {
+            mWakeLock.release();
         }
+        mHandler.removeCallbacks(mSleepTask);
+        mHandler.removeCallbacks(mPollTask);
+        soundSensor.stop();
+        //mDisplay.setLevel(0,0);
+        updateDisplay("stopped...", 0.0);
+        mRunning = false;
 
+    }
+
+    private  float[] lowPass(float[] input, float[] output){
+        if ( output == null ) return input;
+        for ( int i=0; i<input.length; i++ ) {
+            output[i] = output[i] + ALPHA * (input[i] - output[i]);
+        }
+        return output;
     }
 }
