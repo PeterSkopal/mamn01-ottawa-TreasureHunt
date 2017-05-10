@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         //  Intent i = new Intent(this, ShakeGameActivity.class);
         Intent i = new Intent(this, CheckpointActivity.class);
         i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
-        i.putExtra(CheckpointActivity.MINIGAME_ID, CheckpointActivity.MINIGAME_FEATHER);
+        i.putExtra(CheckpointActivity.MINIGAME_ID, 2);
 
 
         this.startActivity(i);

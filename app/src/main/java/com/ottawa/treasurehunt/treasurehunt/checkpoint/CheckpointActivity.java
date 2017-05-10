@@ -10,12 +10,9 @@ import android.util.Log;
 
 import com.ottawa.treasurehunt.treasurehunt.Play;
 import com.ottawa.treasurehunt.treasurehunt.R;
-import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
-import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+
 
 public class CheckpointActivity extends FragmentActivity implements IResultCallback {
     public static final String GAME_TYPE = "GAME_TYPE";
@@ -60,7 +57,7 @@ public class CheckpointActivity extends FragmentActivity implements IResultCallb
                     miniGameFragment = new WindGameFragment();
                     break;
                 default:
-                    miniGameFragment = null;
+                    throw new IllegalArgumentException("Id of game not recognized");
             }
 
             if (miniGameFragment != null) {
