@@ -3,6 +3,7 @@ package com.ottawa.treasurehunt.treasurehunt;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -22,10 +23,18 @@ import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Stack;
 
 public class Play extends AppCompatActivity implements SensorEventListener {
+    public static final String GAMEID = "GameID";
+    public static final String CHECKPOINT_CURRENT = "checkpointCurrent";
+    public static final String PREFS = "com.ottawa.treasurehunt.Play";
+
+    private int currentCheckpoint = 0;
+    private ArrayList<Checkpoint> checkpointList;
+    private boolean isLaunchingCheckpoint;
+    private SharedPreferences prefs;
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -41,16 +50,12 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     private final static float LOWPASS_ALPHA = 0.10f;
     long pastTime = 0;
     private int gameID;
-    private static Game game = null;
-    private static Stack<Checkpoint> checkpointStack;
-    private static Checkpoint currentCheckpoint;
-    private static boolean gameFinished = false;
+    private Game game = null;
 
     protected double currentLat = 55.705738;
     protected double currentLng = 13.209754;
-    private static double destLat = 55.710754;
-    private static double destLng = 13.210342;
-    public static final String GAMEID = "GameID";
+    private double destLat = 55.710754;
+    private double destLng = 13.210342;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,48 +78,55 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, locationListener);
 
         //TODO: get the string value from the localstorage, or server
-        String string = "{\n" +
-                "    \"id\" : 1,\n" +
-                "    \"name\" : \"first game\",\n" +
-                "    \"description\" : \"This is our test game\",\n" +
-                "\n" +
-                "    \"position\": {\n" +
-                "      \"lat\" : 55.711165,\n" +
-                "\t    \"long\" : 13.207776\n" +
+        String string = "  {\n" +
+                "    \"id\":2,\n" +
+                "    \"name\":\"Delphi's Game\",\n" +
+                "    \"description\":\"This is another test game\",\n" +
+                "    \"position\":{\n" +
+                "      \"lat\":55.721001,\n" +
+                "      \"long\":13.210863\n" +
                 "    },\n" +
-                "    \"checkpoints\" : [ {\n" +
-                "        \"position\" : {\n" +
-                "            \"lat\" : 55.710977,\n" +
-                "            \"long\" : 13.208388\n" +
+                "    \"checkpoints\":[\n" +
+                "      {\n" +
+                "        \"position\":{\n" +
+                "          \"lat\":55.721001,\n" +
+                "          \"long\":13.210863\n" +
                 "        },\n" +
-                "        \"minigame\" : null,\n" +
-                "        \"quiz\" : [ {\n" +
-                "            \"answers\" : [ {\n" +
-                "                  \"answer\" : \"190 m\",\n" +
-                "                  \"correct\" : true\n" +
-                "                }, {\n" +
-                "                  \"answer\" : \"160 m\",\n" +
-                "                  \"correct\" : false\n" +
-                "                }, {\n" +
-                "                  \"answer\" : \"220 m\",\n" +
-                "                  \"correct\" : false\n" +
-                "                }, {\n" +
-                "                  \"answer\" : \"260 m\",\n" +
-                "                  \"correct\" : false\n" +
-                "                } ],\n" +
-                "            \"question\" : \"How tall is the Turning Torso?\"\n" +
-                "        } ]\n" +
-                "    },\n" +
-                "    {\n" +
-                "        \"position\" : {\n" +
-                "            \"lat\" : 55.710802,\n" +
-                "            \"long\" : 13.207390\n" +
+                "        \"minigame\":null,\n" +
+                "        \"quiz\":[\n" +
+                "          {\n" +
+                "            \"answers\":[\n" +
+                "              {\n" +
+                "                \"answer\":\"190 m\",\n" +
+                "                \"correct\":true\n" +
+                "              },\n" +
+                "              {\n" +
+                "                \"answer\":\"161 m\",\n" +
+                "                \"correct\":false\n" +
+                "              },\n" +
+                "              {\n" +
+                "                \"answer\":\"220 m\",\n" +
+                "                \"correct\":false\n" +
+                "              },\n" +
+                "              {\n" +
+                "                \"answer\":\"260 m\",\n" +
+                "                \"correct\":false\n" +
+                "              }\n" +
+                "            ],\n" +
+                "            \"question\":\"How tall is the Turning Torso?\"\n" +
+                "          }\n" +
+                "        ]\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"position\":{\n" +
+                "          \"lat\":55.719408,\n" +
+                "          \"long\":13.210875\n" +
                 "        },\n" +
-                "        \"minigame\" : 1,\n" +
-                "        \"quiz\" : null\n" +
-                "      } ]\n" +
+                "        \"minigame\":1,\n" +
+                "        \"quiz\":null\n" +
+                "      }\n" +
+                "    ]\n" +
                 "  }";
-
 
         try {
             game = Parser.generateGame(string);
@@ -125,16 +137,23 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         } catch (Exception e) {
             Log.e("Parser error", e.toString());
         }
-        checkpointStack = new Stack<Checkpoint>();
-        checkpointStack.addAll(game.getCheckpoints());
-        nextCheckpoint();
+
+        checkpointList = game.getCheckpoints();
+
+        Log.i("Play", "onCreate PLAY");
+
+        prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+
+        currentCheckpoint = prefs.getInt(CHECKPOINT_CURRENT, 0);
+
+        Log.i("Play", "onCreate > currentCheckpoint: " + currentCheckpoint);
+        setCheckpoint(currentCheckpoint);
+
+        isLaunchingCheckpoint = false;
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (gameFinished)
-            startActivity(new Intent(this, MainActivity.class));
-
         if (event.sensor == mAccelerometer) {
             mLastAccelerometerSet = true;
             mLastAccelerometer = lowPass(event.values.clone(), mLastAccelerometer);
@@ -154,11 +173,23 @@ public class Play extends AppCompatActivity implements SensorEventListener {
             double bearing = bearing(currentLat, currentLng, destLat, destLng);
             long diff = Math.abs((long) (bearing - azimuthInDegrees));
 
-            if (distance < 10) {
+            /* Only use when debugging device routing
+            Log.i("DATA_READINGS", "distance \t\t" + distance);
+            Log.i("DATA_READINGS", "bearing \t\t" + bearing);
+            Log.i("DATA_READINGS", "azimuth \t\t" + azimuthInDegrees);
+            Log.i("DATA_READINGS", "lat \t\t" + currentLat);
+            Log.i("DATA_READINGS", "long \t\t" + currentLng);
+            Log.i("DATA_READINGS", "lat dest \t\t" + destLat);
+            Log.i("DATA_READINGS", "long dest \t\t" + destLng);
+            */
+
+            if (distance < 10 && !isLaunchingCheckpoint) {
+                isLaunchingCheckpoint = true;
                 Intent i = new Intent(this, CheckpointActivity.class);
 
-                if (currentCheckpoint.getMinigameId() != 0) { //if minigame
-                    int gameId = currentCheckpoint.getMinigameId();
+                if (checkpointList.get(currentCheckpoint).getMinigameId() != 0) { //if minigame
+                    int gameId = checkpointList.get(currentCheckpoint).getMinigameId();
+
                     i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
                     i.putExtra(CheckpointActivity.MINIGAME_ID, gameId);
 
@@ -192,7 +223,7 @@ public class Play extends AppCompatActivity implements SensorEventListener {
                     i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
                 }
 
-
+                prefs.edit().putInt(CHECKPOINT_CURRENT, ++currentCheckpoint).apply();
 
                 this.startActivity(i);
             }
@@ -200,45 +231,18 @@ public class Play extends AppCompatActivity implements SensorEventListener {
             if (diff <= 30) {
                 if (distance < 50) { //close distance
                     if ((SystemClock.elapsedRealtime() - 250) > pastTime) {
-
-                        Log.i("distance:", " " + distance);
-                        Log.i("bearing:", " " + bearing);
-                        Log.i("currentAzimuth:", " " + azimuthInDegrees);
-                        Log.i("currentLat:", " " + currentLat);
-                        Log.i("currentLng:", " " + currentLng);
-                        Log.i("destLat:", " " + destLat);
-                        Log.i("destLng:", " " + destLng);
-
                         long[] pattern = { 210, 40};
                         vibrator.vibrate(pattern, -1);
                         pastTime = SystemClock.elapsedRealtime();
                     }
                 } else if (distance < 200) { //medium distance
                     if ((SystemClock.elapsedRealtime() - 500) > pastTime) {
-
-                        Log.i("distance:", " " + distance);
-                        Log.i("bearing:", " " + bearing);
-                        Log.i("currentAzimuth:", " " + azimuthInDegrees);
-                        Log.i("currentLat:", " " + currentLat);
-                        Log.i("currentLng:", " " + currentLng);
-                        Log.i("destLat:", " " + destLat);
-                        Log.i("destLng:", " " + destLng);
-
                         long[] pattern = { 450, 50 };
                         vibrator.vibrate(pattern, -1);
                         pastTime = SystemClock.elapsedRealtime();
                     }
                 } else { //far distance
                     if ((SystemClock.elapsedRealtime() - 1000) > pastTime) {
-
-                        Log.i("distance:", " " + distance);
-                        Log.i("bearing:", " " + bearing);
-                        Log.i("currentAzimuth:", " " + azimuthInDegrees);
-                        Log.i("currentLat:", " " + currentLat);
-                        Log.i("currentLng:", " " + currentLng);
-                        Log.i("destLat:", " " + destLat);
-                        Log.i("destLng:", " " + destLng);
-
                         long[] pattern = { 900, 100};
                         vibrator.vibrate(pattern, -1);
                         pastTime = SystemClock.elapsedRealtime();
@@ -249,32 +253,37 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    }
 
-    public static void nextCheckpoint() {
-        Checkpoint cp = checkpointStack.pop();
-        if (cp != null) {
-            currentCheckpoint = cp;
-            destLng = cp.getPos().getLongitude();
-            destLat = cp.getPos().getLatitude();
-        } else {
-            Log.i("GAME STATUS", "FINISHED");
-            gameFinished = true;
-        }
-    }
 
+    @Override
     protected void onResume() {
         super.onResume();
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
+
+        Log.i("Play", "Resuming");
     }
 
+    @Override
     protected void onPause() {
         super.onPause();
-        mSensorManager.unregisterListener(this, mAccelerometer);
-        mSensorManager.unregisterListener(this, mMagnetometer);
+        mSensorManager.unregisterListener(this);
+
+        Log.i("Play", "Pausing");
+    }
+
+    private void setCheckpoint(int checkpoint) {
+        Checkpoint cp = checkpointList.get(checkpoint);
+
+        if (cp != null) {
+            destLng = cp.getPos().getLongitude();
+            destLat = cp.getPos().getLatitude();
+        } else {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
     }
 
     private float[] lowPass(float[] input, float[] output) {
@@ -325,29 +334,21 @@ public class Play extends AppCompatActivity implements SensorEventListener {
     }
 
     private class MyLocationListener implements LocationListener {
-
         @Override
         public void onLocationChanged(Location location) {
             currentLat = location.getLatitude();
             currentLng = location.getLongitude();
-            Log.i("MyLocationListener", "Location changed!");
+            Log.i("Play", "Location changed!");
         }
 
         @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-
-        }
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
 
         @Override
-        public void onProviderEnabled(String provider) {
-
-        }
+        public void onProviderEnabled(String provider) {}
 
         @Override
-        public void onProviderDisabled(String provider) {
-
-        }
+        public void onProviderDisabled(String provider) {}
     }
-
 }
 
