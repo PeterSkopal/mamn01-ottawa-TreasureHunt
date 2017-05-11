@@ -21,19 +21,12 @@ import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
 import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
-import com.ottawa.treasurehunt.treasurehunt.utils.game.Minigame;
-import com.ottawa.treasurehunt.treasurehunt.utils.game.Position;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Stack;
 
 public class Play extends AppCompatActivity implements SensorEventListener {
+
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mMagnetometer;
@@ -355,5 +348,6 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
         }
     }
+
 }
 
