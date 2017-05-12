@@ -12,9 +12,16 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -22,7 +29,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,8 +85,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        //TODO: put all the markers from all the json game IDs, both on map and hashmap
-        //TODO: JSON thing is now needed
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String gamesUrl = "https://treasurehunt-mamn01.herokuapp.com/api/games";
+
+        StringRequest strRequest = new StringRequest(Request.Method.GET, gamesUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        ArrayList<Game> games = Parser.generateGames(response);
+
+                        for (Game g : games) {
+                            Log.i("Maps", "Game (" + g.getId() + "): " + g.getName());
+
+                            Marker m = mMap.addMarker(new MarkerOptions()
+                                .position(new LatLng(g.getPosition().getLatitude(), g.getPosition().getLongitude()))
+                                .title(g.getName()));
+
+                            gameMarkers.put(m, g.getId());
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Maps", error.toString());
+                    }
+                });
+
+        queue.add(strRequest);
+
+        /*
         Marker m = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(55.711165, 13.207776)).title("First Game"));
         gameMarkers.put(m, 1);
@@ -84,6 +122,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         m = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(55.721001, 13.210863)).title("Delphi's Game"));
         gameMarkers.put(m, 2);
+        */
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         enableMyLocation();

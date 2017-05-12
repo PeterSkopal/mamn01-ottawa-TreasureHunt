@@ -17,17 +17,17 @@ public class Game {
     private String name;
     @SerializedName("description")
     private String desc;
+    @SerializedName("position")
+    private Position pos;
     @SerializedName("checkpoints")
     private ArrayList<Checkpoint> checkpoints;
-    @SerializedName("position")
-    private static Position pos;
 
-    public Game(int id, String name, String desc, ArrayList<Checkpoint> checkpoints, Position pos) {
+    public Game(int id, String name, String desc, Position pos, ArrayList<Checkpoint> checkpoints) {
         this.id = id;
         this.name = name;
         this.desc = desc;
-        this.checkpoints = checkpoints;
         this.pos = pos;
+        this.checkpoints = checkpoints;
     }
 
     public int getId() { return id; }
@@ -44,7 +44,7 @@ public class Game {
         return checkpoints;
     }
 
-    public static Position getPosition() {
+    public Position getPosition() {
         return pos;
     }
 }
