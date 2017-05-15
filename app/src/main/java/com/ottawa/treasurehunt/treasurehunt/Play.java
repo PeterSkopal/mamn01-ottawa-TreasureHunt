@@ -18,6 +18,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
 import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
@@ -77,79 +83,39 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, locationListener);
 
-        //TODO: get the string value from the localstorage, or server
-        String string = "  {\n" +
-                "    \"id\":2,\n" +
-                "    \"name\":\"Delphi's Game\",\n" +
-                "    \"description\":\"This is another test game\",\n" +
-                "    \"position\":{\n" +
-                "      \"lat\":55.721001,\n" +
-                "      \"long\":13.210863\n" +
-                "    },\n" +
-                "    \"checkpoints\":[\n" +
-                "      {\n" +
-                "        \"position\":{\n" +
-                "          \"lat\":55.721001,\n" +
-                "          \"long\":13.210863\n" +
-                "        },\n" +
-                "        \"minigame\":null,\n" +
-                "        \"quiz\":[\n" +
-                "          {\n" +
-                "            \"answers\":[\n" +
-                "              {\n" +
-                "                \"answer\":\"190 m\",\n" +
-                "                \"correct\":true\n" +
-                "              },\n" +
-                "              {\n" +
-                "                \"answer\":\"161 m\",\n" +
-                "                \"correct\":false\n" +
-                "              },\n" +
-                "              {\n" +
-                "                \"answer\":\"220 m\",\n" +
-                "                \"correct\":false\n" +
-                "              },\n" +
-                "              {\n" +
-                "                \"answer\":\"260 m\",\n" +
-                "                \"correct\":false\n" +
-                "              }\n" +
-                "            ],\n" +
-                "            \"question\":\"How tall is the Turning Torso?\"\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"position\":{\n" +
-                "          \"lat\":55.719408,\n" +
-                "          \"long\":13.210875\n" +
-                "        },\n" +
-                "        \"minigame\":1,\n" +
-                "        \"quiz\":null\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }";
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String gamesUrl = "https://treasurehunt-mamn01.herokuapp.com/api/games/" + gameID;
 
-        try {
-            game = Parser.generateGame(string);
-            if (game == null) {
-                throw new Exception("this is crazy");
-            }
-            Log.i("success", "success");
-        } catch (Exception e) {
-            Log.e("Parser error", e.toString());
-        }
+        StringRequest strRequest = new StringRequest(Request.Method.GET, gamesUrl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("Play", response);
 
-        checkpointList = game.getCheckpoints();
+                        game = Parser.generateGame(response);
 
-        Log.i("Play", "onCreate PLAY");
+                        checkpointList = game.getCheckpoints();
 
-        prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+                        Log.i("Play", "onCreate PLAY");
 
-        currentCheckpoint = prefs.getInt(CHECKPOINT_CURRENT, 0);
+                        prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
-        Log.i("Play", "onCreate > currentCheckpoint: " + currentCheckpoint);
-        setCheckpoint(currentCheckpoint);
+                        currentCheckpoint = prefs.getInt(CHECKPOINT_CURRENT, 0);
 
-        isLaunchingCheckpoint = false;
+                        Log.i("Play", "onCreate > currentCheckpoint: " + currentCheckpoint);
+                        setCheckpoint(currentCheckpoint);
+
+                        isLaunchingCheckpoint = false;
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Maps", error.toString());
+                    }
+                });
+
+        queue.add(strRequest);
     }
 
     @Override

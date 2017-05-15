@@ -1,7 +1,5 @@
 package com.ottawa.treasurehunt.treasurehunt.utils.game;
 
-import android.util.Log;
-
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
