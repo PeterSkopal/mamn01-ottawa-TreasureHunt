@@ -1,6 +1,7 @@
 package com.ottawa.treasurehunt.treasurehunt;
 
 import android.Manifest;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,9 +13,10 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -22,11 +24,12 @@ import com.ottawa.treasurehunt.treasurehunt.checkpoint.CheckpointActivity;
 import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
+import com.ottawa.treasurehunt.treasurehunt.utils.PlayFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Play extends AppCompatActivity implements SensorEventListener {
+public class Play extends FragmentActivity implements SensorEventListener {
     public static final String GAMEID = "GameID";
     public static final String CHECKPOINT_CURRENT = "checkpointCurrent";
     public static final String PREFS = "com.ottawa.treasurehunt.Play";
@@ -78,55 +81,47 @@ public class Play extends AppCompatActivity implements SensorEventListener {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, locationListener);
 
         //TODO: get the string value from the localstorage, or server
-        String string = "  {\n" +
-                "    \"id\":2,\n" +
-                "    \"name\":\"Delphi's Game\",\n" +
-                "    \"description\":\"This is another test game\",\n" +
-                "    \"position\":{\n" +
-                "      \"lat\":55.721001,\n" +
-                "      \"long\":13.210863\n" +
+        String string = "{\n" +
+                "    \"id\" : 1,\n" +
+                "    \"name\" : \"first game\",\n" +
+                "    \"description\" : \"This is our test game\",\n" +
+                "\n" +
+                "    \"position\": {\n" +
+                "      \"lat\" : 55.711237,\n" +
+                "\t    \"long\" : 13.207846\n" +
                 "    },\n" +
-                "    \"checkpoints\":[\n" +
-                "      {\n" +
-                "        \"position\":{\n" +
-                "          \"lat\":55.721001,\n" +
-                "          \"long\":13.210863\n" +
+                "    \"checkpoints\" : [ {\n" +
+                "        \"position\" : {\n" +
+                "            \"lat\" : 55.711237,\n" +
+                "            \"long\" : 13.207846\n" +
                 "        },\n" +
-                "        \"minigame\":null,\n" +
-                "        \"quiz\":[\n" +
-                "          {\n" +
-                "            \"answers\":[\n" +
-                "              {\n" +
-                "                \"answer\":\"190 m\",\n" +
-                "                \"correct\":true\n" +
-                "              },\n" +
-                "              {\n" +
-                "                \"answer\":\"161 m\",\n" +
-                "                \"correct\":false\n" +
-                "              },\n" +
-                "              {\n" +
-                "                \"answer\":\"220 m\",\n" +
-                "                \"correct\":false\n" +
-                "              },\n" +
-                "              {\n" +
-                "                \"answer\":\"260 m\",\n" +
-                "                \"correct\":false\n" +
-                "              }\n" +
-                "            ],\n" +
-                "            \"question\":\"How tall is the Turning Torso?\"\n" +
-                "          }\n" +
-                "        ]\n" +
-                "      },\n" +
-                "      {\n" +
-                "        \"position\":{\n" +
-                "          \"lat\":55.719408,\n" +
-                "          \"long\":13.210875\n" +
+                "        \"minigame\" : null,\n" +
+                "        \"quiz\" : [ {\n" +
+                "            \"answers\" : [ {\n" +
+                "                  \"answer\" : \"190 m\",\n" +
+                "                  \"correct\" : true\n" +
+                "                }, {\n" +
+                "                  \"answer\" : \"160 m\",\n" +
+                "                  \"correct\" : false\n" +
+                "                }, {\n" +
+                "                  \"answer\" : \"220 m\",\n" +
+                "                  \"correct\" : false\n" +
+                "                }, {\n" +
+                "                  \"answer\" : \"260 m\",\n" +
+                "                  \"correct\" : false\n" +
+                "                } ],\n" +
+                "            \"question\" : \"How tall is the Turning Torso?\"\n" +
+                "        } ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"position\" : {\n" +
+                "            \"lat\" : 55.710802,\n" +
+                "            \"long\" : 13.207390\n" +
                 "        },\n" +
-                "        \"minigame\":1,\n" +
-                "        \"quiz\":null\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }";
+                "        \"minigame\" : 1,\n" +
+                "        \"quiz\" : null\n" +
+                "      } ]\n" +
+                "  }\n";
 
         try {
             game = Parser.generateGame(string);
@@ -185,47 +180,64 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
             if (distance < 10 && !isLaunchingCheckpoint) {
                 isLaunchingCheckpoint = true;
-                Intent i = new Intent(this, CheckpointActivity.class);
-
+                vibrator.vibrate(1000);
+                mSensorManager.unregisterListener(this);
                 if (checkpointList.get(currentCheckpoint).getMinigameId() != 0) { //if minigame
-                    int gameId = checkpointList.get(currentCheckpoint).getMinigameId();
+                    setFragment(PlayFragment.newInstance("minigame"));
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent i = new Intent(getApplicationContext(), CheckpointActivity.class);
+                            int gameId = checkpointList.get(currentCheckpoint).getMinigameId();
 
-                    i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
-                    i.putExtra(CheckpointActivity.MINIGAME_ID, gameId);
+                            i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
+                            i.putExtra(CheckpointActivity.MINIGAME_ID, gameId);
+
+                            prefs.edit().putInt(CHECKPOINT_CURRENT, ++currentCheckpoint).apply();
+                            startActivity(i);
+                        }
+                    }, 5000);
+
 
                 } else { //if quiz
-                    i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
-                    String[] questions = new String[]{
-                            "How tall is the Turning Torso?",
-                            "Where's the headquarters of the automotive company Tesla located?"
-                    };
+                    setFragment(PlayFragment.newInstance("quiz"));
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent i = new Intent(getApplicationContext(), CheckpointActivity.class);
+                            i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
+                            String[] questions = new String[]{
+                                    "How tall is the Turning Torso?",
+                                    "Where's the headquarters of the automotive company Tesla located?"
+                            };
 
-                    i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
+                            i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
 
-                    HashMap<String, Boolean> firstQAnswers = new HashMap<>();
-                    firstQAnswers.put("152m", false);
-                    firstQAnswers.put("212m", false);
-                    firstQAnswers.put("173m", false);
-                    firstQAnswers.put("190m", true);
+                            HashMap<String, Boolean> firstQAnswers = new HashMap<>();
+                            firstQAnswers.put("152m", false);
+                            firstQAnswers.put("212m", false);
+                            firstQAnswers.put("173m", false);
+                            firstQAnswers.put("190m", true);
 
-                    HashMap<String, Boolean> secondQAnswers = new HashMap<>();
-                    secondQAnswers.put("Los Angeles, California", false);
-                    secondQAnswers.put("Palo Alto, California", true);
-                    secondQAnswers.put("San Fransisco, California", false);
-                    secondQAnswers.put("Silicon Valley, California", false);
+                            HashMap<String, Boolean> secondQAnswers = new HashMap<>();
+                            secondQAnswers.put("Los Angeles, California", false);
+                            secondQAnswers.put("Palo Alto, California", true);
+                            secondQAnswers.put("San Fransisco, California", false);
+                            secondQAnswers.put("Silicon Valley, California", false);
 
-                    @SuppressWarnings("unchecked")
-                    HashMap<String, Boolean>[] answers = new HashMap[]{
-                            firstQAnswers,
-                            secondQAnswers
-                    };
+                            @SuppressWarnings("unchecked")
+                            HashMap<String, Boolean>[] answers = new HashMap[]{
+                                    firstQAnswers,
+                                    secondQAnswers
+                            };
 
-                    i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
+                            i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
+
+                            prefs.edit().putInt(CHECKPOINT_CURRENT, ++currentCheckpoint).apply();
+                            startActivity(i);
+                        }
+                    }, 5000);
                 }
-
-                prefs.edit().putInt(CHECKPOINT_CURRENT, ++currentCheckpoint).apply();
-
-                this.startActivity(i);
             }
 
             if (diff <= 30) {
@@ -349,6 +361,14 @@ public class Play extends AppCompatActivity implements SensorEventListener {
 
         @Override
         public void onProviderDisabled(String provider) {}
+    }
+
+    // http://stackoverflow.com/a/28208203
+    protected void setFragment(Fragment fragment) {
+        getFragmentManager()
+                .beginTransaction()
+                .replace(R.id.frame_container, fragment)
+                .commit();
     }
 }
 

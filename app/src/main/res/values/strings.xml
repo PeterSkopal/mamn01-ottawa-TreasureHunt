@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Treasure Hunt</string>
     <string name="title_activity_maps">Map</string>
+
+    <string name="title_activity_before_quiz">BeforeQuizActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="title_activity_before_mini_game">BeforeMiniGameActivity</string>
 </resources>
