@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class Checkpoint {
     @SerializedName("position")
     private Position pos;
-    @SerializedName("quiz")
+    @SerializedName("quizzes")
     private ArrayList<Question> quiz;
     @SerializedName("minigame")
     private int minigame;

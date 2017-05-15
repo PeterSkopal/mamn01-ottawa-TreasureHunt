@@ -70,10 +70,15 @@ public class Play extends FragmentActivity implements SensorEventListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play);
+        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null)
             gameID = bundle.getInt(GAMEID);
+        else
+            gameID = prefs.getInt(GAMEID, 0);
+
+        prefs.edit().putInt(GAMEID, gameID).apply();
 
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -93,15 +98,13 @@ public class Play extends FragmentActivity implements SensorEventListener {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.i("Play", response);
+                        Log.i("Play", "response: " + response);
 
                         game = Parser.generateGame(response);
 
                         checkpointList = game.getCheckpoints();
 
                         Log.i("Play", "onCreate PLAY");
-
-                        prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
                         currentCheckpoint = prefs.getInt(CHECKPOINT_CURRENT, 0);
 
