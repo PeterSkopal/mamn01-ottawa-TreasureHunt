@@ -1,6 +1,7 @@
 package com.ottawa.treasurehunt.treasurehunt.checkpoint;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -35,6 +36,8 @@ public class QuizFragment extends Fragment implements SensorEventListener {
     private static final long ACCEPT_CHOICE_TIME = 1500;
     private static final long ACCEPT_CHOICE_VIBRATION_TIME = 50;
 
+    private static final int BUTTON_COLOR_GRADIENT = Color.rgb(50, 50, 50);
+
     private SensorManager sensorManager;
     private Sensor sensorAccel;
     private Sensor sensorMagneto;
@@ -49,6 +52,7 @@ public class QuizFragment extends Fragment implements SensorEventListener {
     private boolean hasMagneto;
     private long startTime;
     private int currentChoiceBtn;
+    private short gradientNormalizer = 255;
 
     private String question;
     private HashMap<String, Boolean> answers;
@@ -135,11 +139,11 @@ public class QuizFragment extends Fragment implements SensorEventListener {
 
         int i = 0;
         for (Map.Entry<String, Boolean> entry : answers.entrySet()) {
-            //btns[i].setOnClickListener(onAnswerClick);
             btns[i++].setText(entry.getKey());
         }
 
         progressTimeLeft.setMax(PROGRESS_TIMER);
+        progressTimeLeft.setScaleY(3f);
 
         progressTimeHandler = new Handler();
         progressTimeRunnable = new Runnable() { // Progress timer, if progress = 100 then start next quiz
@@ -149,6 +153,9 @@ public class QuizFragment extends Fragment implements SensorEventListener {
             public void run() {
                 if (count <= PROGRESS_TIMER) {
                     progressTimeLeft.setProgress(count++);
+                    short normalizedProgress = (short) (gradientNormalizer*((float)count/PROGRESS_TIMER));
+                    progressTimeLeft.setProgressTintList(ColorStateList.valueOf(
+                            Color.argb(normalizedProgress, normalizedProgress, (255-normalizedProgress), 0)));
                     progressTimeHandler.postDelayed(this, 10);
                 } else {
                     progressTimeHandler.removeCallbacks(this);
@@ -227,7 +234,7 @@ public class QuizFragment extends Fragment implements SensorEventListener {
             roll = vecOrientation[2] * 180f / (float) Math.PI;
 
             for (Button btn : btns) {
-                btn.setBackgroundColor(Color.GRAY);
+                btn.setBackgroundColor(BUTTON_COLOR_GRADIENT);
             }
 
             if (pitch > TILT_THRESHOLD && roll < -TILT_THRESHOLD) { // TOP RIGHT
