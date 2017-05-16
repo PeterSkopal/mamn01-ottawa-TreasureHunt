@@ -31,7 +31,9 @@ import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
 import com.ottawa.treasurehunt.treasurehunt.utils.PlayFragment;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Question;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -183,30 +185,36 @@ public class Play extends FragmentActivity implements SensorEventListener {
                         public void run() {
                             Intent i = new Intent(getApplicationContext(), CheckpointActivity.class);
                             i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
-                            String[] questions = new String[]{
-                                    "How tall is the Turning Torso?",
-                                    "Where's the headquarters of the automotive company Tesla located?"
-                            };
+
+                            int numQuestions = checkpointList.get(currentCheckpoint)
+                                    .getQuiz().size();
+
+                            String[] questions =
+                                    new String[numQuestions];
+
+                            HashMap<String, Boolean>[] answers =
+                                    new HashMap[numQuestions];
+
+                            int currentQuestion = 0;
+                            for (Question q : checkpointList.get(currentCheckpoint).getQuiz()) {
+                                questions[currentQuestion] = q.getQuestion();
+
+                                Log.i("QuizPlay", "question: " + currentQuestion + " " + q.getQuestion());
+
+                                HashMap<String, Boolean> tempHMap = new HashMap<String, Boolean>();
+
+                                for (int n = 0; n < q.getAnswers().size(); n++) {
+                                    tempHMap.put(
+                                            q.getAnswers().get(n).getAnswer(),
+                                            q.getAnswers().get(n).isCorrect());
+                                }
+
+                                answers[currentQuestion] = tempHMap;
+
+                                currentQuestion++;
+                            }
 
                             i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
-
-                            HashMap<String, Boolean> firstQAnswers = new HashMap<>();
-                            firstQAnswers.put("152m", false);
-                            firstQAnswers.put("212m", false);
-                            firstQAnswers.put("173m", false);
-                            firstQAnswers.put("190m", true);
-
-                            HashMap<String, Boolean> secondQAnswers = new HashMap<>();
-                            secondQAnswers.put("Los Angeles, California", false);
-                            secondQAnswers.put("Palo Alto, California", true);
-                            secondQAnswers.put("San Fransisco, California", false);
-                            secondQAnswers.put("Silicon Valley, California", false);
-
-                            @SuppressWarnings("unchecked")
-                            HashMap<String, Boolean>[] answers = new HashMap[]{
-                                    firstQAnswers,
-                                    secondQAnswers
-                            };
 
                             i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
 
