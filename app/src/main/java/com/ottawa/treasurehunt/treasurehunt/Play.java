@@ -19,6 +19,7 @@ import android.os.Vibrator;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ProgressBar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -62,6 +63,7 @@ public class Play extends FragmentActivity implements SensorEventListener {
     long pastTime = 0;
     private int gameID;
     private Game game = null;
+    private HorizontalDottedProgress progressDots;
 
     protected double currentLat = 55.705738;
     protected double currentLng = 13.209754;
@@ -88,6 +90,7 @@ public class Play extends FragmentActivity implements SensorEventListener {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         LocationListener locationListener = new MyLocationListener();
+
         if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1337);
         }
@@ -114,6 +117,9 @@ public class Play extends FragmentActivity implements SensorEventListener {
                         setCheckpoint(currentCheckpoint);
 
                         isLaunchingCheckpoint = false;
+
+                        HorizontalDottedProgress.setNumberOfCheckpoints(checkpointList.size());
+                        HorizontalDottedProgress.setCurrentCheckpoint(currentCheckpoint);
                     }
                 },
                 new Response.ErrorListener() {
@@ -125,6 +131,9 @@ public class Play extends FragmentActivity implements SensorEventListener {
 
         queue.add(strRequest);
     }
+
+    @Override
+    public void onBackPressed() {}
 
     @Override
     public void onSensorChanged(SensorEvent event) {
