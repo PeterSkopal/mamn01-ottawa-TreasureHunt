@@ -281,14 +281,24 @@ public class Play extends FragmentActivity implements SensorEventListener {
     }
 
     private void setCheckpoint(int checkpoint) {
-        Checkpoint cp = checkpointList.get(checkpoint);
+        if (checkpoint < checkpointList.size()) {
+            Checkpoint cp = checkpointList.get(checkpoint);
 
-        if (cp != null) {
             destLng = cp.getPos().getLongitude();
             destLat = cp.getPos().getLatitude();
         } else {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
+            Log.i("Play", "END GAME");
+
+            setFragment(PlayFragment.newInstance("THE END"));
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(
+                            new Intent(getApplicationContext(), MainActivity.class));
+                    finish();
+                }
+            }, 11000);
         }
     }
 

@@ -1,5 +1,6 @@
 package com.ottawa.treasurehunt.treasurehunt.utils;
 
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -40,12 +41,22 @@ public class PlayFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_play, container, false);
 
         if (ins == "quiz") {
-            ((TextView) view.findViewById(R.id.instructional_text_mini_game)).setText("Tilt your phone to answer the questions!");
+            ((TextView) view.findViewById(R.id.instructional_text_mini_game))
+                    .setText("Tilt your phone to answer the questions!");
         } else if (ins == "minigame"){
             ((ImageView) view.findViewById(R.id.instruction_image)).setVisibility(View.INVISIBLE);
-            ((TextView) view.findViewById(R.id.instructional_text_mini_game)).setText("Prepare yourself for a MiniGame!");
+            ((TextView) view.findViewById(R.id.instructional_text_mini_game))
+                    .setText("Prepare yourself for a MiniGame!");
         } else {
+            ((TextView) view.findViewById(R.id.instructional_text_mini_game))
+                    .setText("Congratulations,\nyou found the treasure!");
+            ImageView iv = (ImageView) view.findViewById(R.id.instruction_image);
+            iv.setImageResource(R.drawable.treasure_chest);
+            iv.setVisibility(View.VISIBLE);
 
+            MediaPlayer mediaPlayer = MediaPlayer.create(getContext(), R.raw.trumpet_win);
+            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer.start();
         }
 
         return view;
