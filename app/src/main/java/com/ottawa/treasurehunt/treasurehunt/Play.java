@@ -19,6 +19,7 @@ import android.os.Vibrator;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ProgressBar;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -31,7 +32,9 @@ import com.ottawa.treasurehunt.treasurehunt.utils.Parser;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Checkpoint;
 import com.ottawa.treasurehunt.treasurehunt.utils.game.Game;
 import com.ottawa.treasurehunt.treasurehunt.utils.PlayFragment;
+import com.ottawa.treasurehunt.treasurehunt.utils.game.Question;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -60,6 +63,7 @@ public class Play extends FragmentActivity implements SensorEventListener {
     long pastTime = 0;
     private int gameID;
     private Game game = null;
+    private HorizontalDottedProgress progressDots;
 
     protected double currentLat = 55.705738;
     protected double currentLng = 13.209754;
@@ -86,6 +90,7 @@ public class Play extends FragmentActivity implements SensorEventListener {
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         LocationListener locationListener = new MyLocationListener();
+
         if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1337);
         }
@@ -112,6 +117,9 @@ public class Play extends FragmentActivity implements SensorEventListener {
                         setCheckpoint(currentCheckpoint);
 
                         isLaunchingCheckpoint = false;
+
+                        HorizontalDottedProgress.setNumberOfCheckpoints(checkpointList.size());
+                        HorizontalDottedProgress.setCurrentCheckpoint(currentCheckpoint);
                     }
                 },
                 new Response.ErrorListener() {
@@ -123,6 +131,9 @@ public class Play extends FragmentActivity implements SensorEventListener {
 
         queue.add(strRequest);
     }
+
+    @Override
+    public void onBackPressed() {}
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -183,30 +194,36 @@ public class Play extends FragmentActivity implements SensorEventListener {
                         public void run() {
                             Intent i = new Intent(getApplicationContext(), CheckpointActivity.class);
                             i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
-                            String[] questions = new String[]{
-                                    "How tall is the Turning Torso?",
-                                    "Where's the headquarters of the automotive company Tesla located?"
-                            };
+
+                            int numQuestions = checkpointList.get(currentCheckpoint)
+                                    .getQuiz().size();
+
+                            String[] questions =
+                                    new String[numQuestions];
+
+                            HashMap<String, Boolean>[] answers =
+                                    new HashMap[numQuestions];
+
+                            int currentQuestion = 0;
+                            for (Question q : checkpointList.get(currentCheckpoint).getQuiz()) {
+                                questions[currentQuestion] = q.getQuestion();
+
+                                Log.i("QuizPlay", "question: " + currentQuestion + " " + q.getQuestion());
+
+                                HashMap<String, Boolean> tempHMap = new HashMap<String, Boolean>();
+
+                                for (int n = 0; n < q.getAnswers().size(); n++) {
+                                    tempHMap.put(
+                                            q.getAnswers().get(n).getAnswer(),
+                                            q.getAnswers().get(n).isCorrect());
+                                }
+
+                                answers[currentQuestion] = tempHMap;
+
+                                currentQuestion++;
+                            }
 
                             i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
-
-                            HashMap<String, Boolean> firstQAnswers = new HashMap<>();
-                            firstQAnswers.put("152m", false);
-                            firstQAnswers.put("212m", false);
-                            firstQAnswers.put("173m", false);
-                            firstQAnswers.put("190m", true);
-
-                            HashMap<String, Boolean> secondQAnswers = new HashMap<>();
-                            secondQAnswers.put("Los Angeles, California", false);
-                            secondQAnswers.put("Palo Alto, California", true);
-                            secondQAnswers.put("San Fransisco, California", false);
-                            secondQAnswers.put("Silicon Valley, California", false);
-
-                            @SuppressWarnings("unchecked")
-                            HashMap<String, Boolean>[] answers = new HashMap[]{
-                                    firstQAnswers,
-                                    secondQAnswers
-                            };
 
                             i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
 
@@ -264,14 +281,24 @@ public class Play extends FragmentActivity implements SensorEventListener {
     }
 
     private void setCheckpoint(int checkpoint) {
-        Checkpoint cp = checkpointList.get(checkpoint);
+        if (checkpoint < checkpointList.size()) {
+            Checkpoint cp = checkpointList.get(checkpoint);
 
-        if (cp != null) {
             destLng = cp.getPos().getLongitude();
             destLat = cp.getPos().getLatitude();
         } else {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
+            Log.i("Play", "END GAME");
+
+            setFragment(PlayFragment.newInstance("THE END"));
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(
+                            new Intent(getApplicationContext(), MainActivity.class));
+                    finish();
+                }
+            }, 11000);
         }
     }
 
