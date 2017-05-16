@@ -9,7 +9,7 @@
 
     <TableLayout
         android:id="@+id/tableLayout2"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="200dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -19,25 +19,63 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <Button
-                android:id="@+id/btnAns1"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:text="Button"
-                android:textAppearance="@android:style/TextAppearance.Material.Large"
-                android:textColor="@android:color/white" />
+                >
 
-            <Button
-                android:id="@+id/btnAns2"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                <Button
+                    android:id="@+id/btnAns1"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Button"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
+                    android:textColor="@android:color/white"
+                    android:background="#323232"/>
+
+                <ProgressBar
+                    android:id="@+id/proggAns1"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#323232"
+                    android:elevation="2dp"
+                    android:progressTint="#5bacdf"
+                    android:layout_gravity="bottom"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:text="Button"
-                android:textAppearance="@android:style/TextAppearance.Material.Large"
-                android:textColor="@android:color/white" />
+                >
+                <Button
+                    android:id="@+id/btnAns2"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Button"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
+                    android:textColor="@android:color/white"
+                    android:background="#323232" />
+
+                <ProgressBar
+                    android:id="@+id/proggAns2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:elevation="2dp"
+                    android:background="#323232"
+                    android:progressTint="#5bacdf"
+                    android:layout_gravity="bottom"/>
+
+            </FrameLayout>
+
 
         </TableRow>
     </TableLayout>
@@ -69,7 +107,7 @@
 
     <TableLayout
         android:id="@+id/tableLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="200dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -79,25 +117,60 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <Button
-                android:id="@+id/btnAns3"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:text="Button"
-                android:textAppearance="@android:style/TextAppearance.Material.Large"
-                android:textColor="@android:color/white" />
+                >
 
-            <Button
-                android:id="@+id/btnAns4"
-                style="@style/Widget.AppCompat.Button.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                <Button
+                    android:id="@+id/btnAns3"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Button"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
+                    android:textColor="@android:color/white"
+                    android:background="#323232"/>
+
+                <ProgressBar
+                    android:id="@+id/proggAns3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:elevation="2dp"
+                    android:background="#323232"
+                    android:progressTint="#5bacdf" />
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:text="Button"
-                android:textAppearance="@android:style/TextAppearance.Material.Large"
-                android:textColor="@android:color/white" />
+                >
+                <Button
+                    android:id="@+id/btnAns4"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Button"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
+                    android:textColor="@android:color/white"
+                    android:background="#323232"/>
+
+                <ProgressBar
+                    android:id="@+id/proggAns4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:elevation="2dp"
+                    android:background="#323232"
+                    android:progressTint="#5bacdf" />
+
+            </FrameLayout>
         </TableRow>
     </TableLayout>
 

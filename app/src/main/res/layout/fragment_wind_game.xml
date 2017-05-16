@@ -13,6 +13,7 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
+        android:visibility="gone"
         android:text="Status"
         android:textAppearance="@android:style/TextAppearance.Material.Large"
         app:layout_constraintLeft_toLeftOf="parent"

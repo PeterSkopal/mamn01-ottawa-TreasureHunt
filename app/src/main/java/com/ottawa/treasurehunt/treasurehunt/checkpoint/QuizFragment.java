@@ -11,12 +11,14 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ottawa.treasurehunt.treasurehunt.R;
 
@@ -67,6 +69,7 @@ public class QuizFragment extends Fragment implements SensorEventListener {
     Runnable progressTimeRunnable;
     TextView txtQuestion;
     Button[] btns;
+    ProgressBar[] progg;
 
     View.OnClickListener onAnswerClick = new View.OnClickListener() {
         @Override
@@ -133,6 +136,23 @@ public class QuizFragment extends Fragment implements SensorEventListener {
                 (Button) view.findViewById(R.id.btnAns3),
                 (Button) view.findViewById(R.id.btnAns4)
         };
+
+        progg = new ProgressBar[]{
+                (ProgressBar) view.findViewById(R.id.proggAns1),
+                (ProgressBar) view.findViewById(R.id.proggAns2),
+                (ProgressBar) view.findViewById(R.id.proggAns3),
+                (ProgressBar) view.findViewById(R.id.proggAns4)
+        };
+
+        for(ProgressBar progress : progg){
+            progress.setMax(100);
+        }
+
+        // Makes left progressbars grow towards screen edge
+        progg[0].setRotation(180);
+        progg[2].setRotation(180);
+
+
 
         //txtQuizProgress.setText(String.format("%d / %d", quizNumber, quizNumberTotal));
         txtQuestion.setText(question);
@@ -237,40 +257,57 @@ public class QuizFragment extends Fragment implements SensorEventListener {
                 btn.setBackgroundColor(BUTTON_COLOR_GRADIENT);
             }
 
-            if (pitch > TILT_THRESHOLD && roll < -TILT_THRESHOLD) { // TOP RIGHT
+            //for (ProgressBar progress : progg){
+            //    progress.setProgress(50);
+            //}
+
+            if (pitch > TILT_THRESHOLD && roll < -TILT_THRESHOLD) { // TOP LEFT
                 if (currentChoiceBtn != 0) {
                     vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
                     startTime = System.currentTimeMillis();
+                    resetProgress();
                 }
 
                 currentChoiceBtn = 0;
-                btns[0].setBackgroundColor(Color.CYAN);
-            } else if (pitch > TILT_THRESHOLD && roll > TILT_THRESHOLD) { // TOP LEFT
+                double progress = ((System.currentTimeMillis()-startTime)/(double)ACCEPT_CHOICE_TIME)*100;
+                progg[0].setProgress((int)progress);
+                btns[0].setBackgroundColor(Color.rgb(91,172,223));
+            } else if (pitch > TILT_THRESHOLD && roll > TILT_THRESHOLD) { // TOP RIGHT
                 if (currentChoiceBtn != 1) {
                     vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
                     startTime = System.currentTimeMillis();
+                    resetProgress();
                 }
 
                 currentChoiceBtn = 1;
-                btns[1].setBackgroundColor(Color.CYAN);
+                double progress = ((System.currentTimeMillis()-startTime)/(double)ACCEPT_CHOICE_TIME)*100;
+                progg[1].setProgress((int)progress);
+                btns[1].setBackgroundColor(Color.rgb(91,172,223));
             } else if (pitch < -TILT_THRESHOLD && roll < -TILT_THRESHOLD) { // BOTTOM LEFT
                 if (currentChoiceBtn != 2) {
                     vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
                     startTime = System.currentTimeMillis();
+                    resetProgress();
                 }
 
                 currentChoiceBtn = 2;
-                btns[2].setBackgroundColor(Color.CYAN);
+                double progress = ((System.currentTimeMillis()-startTime)/(double)ACCEPT_CHOICE_TIME)*100;
+                progg[2].setProgress((int)progress);
+                btns[2].setBackgroundColor(Color.rgb(91,172,223));
             } else if (pitch < -TILT_THRESHOLD && roll > TILT_THRESHOLD) { // BOTTOM RIGHT
                 if (currentChoiceBtn != 3) {
                     vibrator.vibrate(ACCEPT_CHOICE_VIBRATION_TIME);
                     startTime = System.currentTimeMillis();
+                    resetProgress();
                 }
 
                 currentChoiceBtn = 3;
-                btns[3].setBackgroundColor(Color.CYAN);
+                double progress = ((System.currentTimeMillis()-startTime)/(double)ACCEPT_CHOICE_TIME)*100;
+                progg[3].setProgress((int)progress);
+                btns[3].setBackgroundColor(Color.rgb(91,172,223));
             } else {
                 currentChoiceBtn = -1;
+                resetProgress();
             }
 
             if (currentChoiceBtn > -1 &&
@@ -302,5 +339,11 @@ public class QuizFragment extends Fragment implements SensorEventListener {
         }
 
         return output;
+    }
+
+    private void resetProgress (){
+        for(ProgressBar progress : progg){
+            progress.setProgress(0);
+        }
     }
 }

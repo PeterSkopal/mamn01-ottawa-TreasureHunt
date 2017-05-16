@@ -25,7 +25,7 @@ public class WindGameFragment extends Fragment{
     private boolean mRunning = false;
 
     /** config state **/
-    private int mThreshold;
+    private float mThreshold;
 
     private PowerManager.WakeLock mWakeLock;
 
@@ -67,7 +67,7 @@ public class WindGameFragment extends Fragment{
             updateDisplay("Monitoring Voice... " + String.valueOf(output[0]), output[0]);
 
             if ((output[0] > mThreshold)) {
-                callForHelp();
+                callForHelp(output[0]);
                 //Log.i("Noise", "==== onCreate ===");
 
             }
@@ -135,15 +135,24 @@ public class WindGameFragment extends Fragment{
     }
 
 
-    private void callForHelp() {
+    private void callForHelp(float level) {
 
         //stop();
 
         // Show alert when noise thersold crossed
-        Toast.makeText(getContext().getApplicationContext(), "Noise Thersold Crossed, do here your stuff.",
-                Toast.LENGTH_LONG).show();
+        // Toast.makeText(getContext().getApplicationContext(), "Noise Thersold Crossed, do here your stuff.",
+        //         Toast.LENGTH_LONG).show();
 
-        posY = featherView.getY()-40;
+        if(level >= mThreshold && level < mThreshold + 1.5f){
+            // Slow
+            posY = featherView.getY()-25;
+        } else if (level >= mThreshold + 1.5f && level < mThreshold + 2f) {
+            // Fast
+            posY = featherView.getY()-50;
+        } else if (level >= mThreshold + 2f) {
+            // Fastest
+            posY = featherView.getY()-80;
+        }
         featherView.setY(posY);
 
         if(featherView.getY() <= 10){
