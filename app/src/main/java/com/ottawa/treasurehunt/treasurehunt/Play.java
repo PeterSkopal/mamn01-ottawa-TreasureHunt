@@ -131,6 +131,9 @@ public class Play extends FragmentActivity implements SensorEventListener {
     }
 
     @Override
+    public void onBackPressed() {}
+
+    @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor == mAccelerometer) {
             mLastAccelerometerSet = true;
