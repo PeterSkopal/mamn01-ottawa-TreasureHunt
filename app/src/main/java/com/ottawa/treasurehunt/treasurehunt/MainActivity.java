@@ -56,68 +56,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onMapsClick (View v) {
+    public void onPlayClick (View v) {
         Intent i = new Intent(this, MapsActivity.class);
         this.startActivity(i);
     }
 
-    public void onPlayClick (View v) {
-        Intent i = new Intent(this, Play.class);
-        this.startActivity(i);
+    public void onSettingsClick (View v) {
+        Toast.makeText(this, "Out of Scope for this Prototype", Toast.LENGTH_SHORT).show();
     }
 
-    public void onCheckpointClick(View v) {
-        Intent i = new Intent(this, CheckpointActivity.class);
-        i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.QUIZ);
-
-        String[] questions = new String[]{
-                "How tall is the Turning Torso?",
-                "Where's the headquarters of the automotive company Tesla located?"
-        };
-
-        i.putExtra(CheckpointActivity.QUIZ_QUESTIONS, questions);
-
-        HashMap<String, Boolean> firstQAnswers = new HashMap<>();
-        firstQAnswers.put("152m", false);
-        firstQAnswers.put("212m", false);
-        firstQAnswers.put("173m", false);
-        firstQAnswers.put("190m", true);
-
-        HashMap<String, Boolean> secondQAnswers = new HashMap<>();
-        secondQAnswers.put("Los Angeles, California", false);
-        secondQAnswers.put("Palo Alto, California", true);
-        secondQAnswers.put("San Fransisco, California", false);
-        secondQAnswers.put("Silicon Valley, California", false);
-
-        @SuppressWarnings("unchecked")
-        HashMap<String, Boolean>[] answers = new HashMap[]{
-                firstQAnswers,
-                secondQAnswers
-        };
-
-        i.putExtra(CheckpointActivity.QUIZ_ANSWERS, answers);
-
-        this.startActivity(i);
-    }
-
-    public void onMiniClick (View v) {
-      //  Intent i = new Intent(this, ShakeGameActivity.class);
-        Intent i = new Intent(this, CheckpointActivity.class);
-        i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
-        i.putExtra(CheckpointActivity.MINIGAME_ID, 1);
-
-
-        this.startActivity(i);
-    }
-
-    public void onMini2Click (View v) {
-        //  Intent i = new Intent(this, ShakeGameActivity.class);
-        Intent i = new Intent(this, CheckpointActivity.class);
-        i.putExtra(CheckpointActivity.GAME_TYPE, CheckpointActivity.MINIGAME);
-        i.putExtra(CheckpointActivity.MINIGAME_ID, 2);
-
-
-        this.startActivity(i);
+    public void onHighscoreClick (View v) {
+        Toast.makeText(this, "Out of Scope for this Prototype", Toast.LENGTH_SHORT).show();
     }
 
     public void onResume(){

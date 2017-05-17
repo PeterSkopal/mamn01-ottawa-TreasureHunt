@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -126,6 +127,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         enableMyLocation();
+        String provider = locationManager.getBestProvider(new Criteria(), true);
+        Location location = locationManager.getLastKnownLocation(provider);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(location.getLatitude(), location.getLongitude()), 17.0f));
     }
 
     public void onStartPress(View v) {
@@ -154,23 +159,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 10, this);
     }
 
+    /*
+     * When our location is updated we go through our markers to see if we're standing on top of
+     * a marker. If we're standing on a marker we show the START GAME button and set
+     * `standingOnGameId` value to the marker's gameId, when the user presses START GAME, we
+     * launch the Play activity with `standingOnGameId` id, see `onStartPress`.
+     */
     @Override
     public void onLocationChanged(Location location) {
-        /*
-        double distance = distFrom(location.getLatitude(), location.getLongitude(), destLat, destLng);
-        if (distance < 25) {
-            button.setVisibility(View.VISIBLE);
-        } else {
-            button.setVisibility(View.GONE);
-        }
-        */
-
-        /*
-         * When out location is updated we go through our markers to see if we're standing on top of
-         * a marker. If we're standing on a marker we show the START GAME button and set
-         * `standingOnGameId` value to the marker's gameId, when the user presses START GAME, we
-         * launch the Play activity with `standingOnGameId` id, see `onStartPress`.
-         */
         for (Map.Entry<Marker, Integer> e : gameMarkers.entrySet()) {
             double distance = distFrom(
                     location.getLatitude(),
@@ -185,12 +181,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             } else {
                 button.setVisibility(View.INVISIBLE);
             }
-        }
-
-        if (!centerOnce) { /* This is used ¿instead? of implementing onConnected and onDisconnected (I believe) */
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(location.getLatitude(), location.getLongitude()), 17.0f));
-            centerOnce = true;
         }
     }
 

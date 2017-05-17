@@ -1,61 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#323232"
     tools:context="com.ottawa.treasurehunt.treasurehunt.MainActivity">
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/play_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/button3"
-        android:layout_marginTop="18dp"
-        android:onClick="onCheckpointClick"
-        android:text="Checkpoint" />
-
-    <Button
-        android:id="@+id/mapButton"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:onClick="onMapsClick"
-        android:text="Map"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginTop="36dp" />
-
-    <Button
-        android:id="@+id/miniGame"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/button2"
-        android:onClick="onMiniClick"
-        android:text="Mini Game"
-        android:layout_marginTop="18dp" />
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/mapButton"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:background="#5bacdf"
+        android:drawableLeft="@drawable/play_icon_128"
+        android:drawableTint="#eee"
         android:onClick="onPlayClick"
-        android:text="Compass"
-        app:layout_constraintTop_toBottomOf="@+id/mapButton" />
+        android:padding="10dp"
+        android:text=" PLAY"
+        android:textColor="#eee"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/highscore_button"
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <Button
-        android:id="@+id/MiniGame2"
+        android:id="@+id/settings_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/miniGame"
+        android:layout_below="@+id/play_button"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:onClick="onMini2Click"
-        android:text="Mini Game 2"
-        app:layout_constraintTop_toBottomOf="@+id/miniGame" />
-</RelativeLayout>
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="4dp"
+        android:background="#5bacdf"
+        android:drawableLeft="@drawable/settings_icon_128"
+        android:drawableTint="#eee"
+        android:onClick="onSettingsClick"
+        android:padding="10dp"
+        android:text=" Settings"
+        android:textColor="#eee"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/highscore_button" />
+
+    <Button
+        android:id="@+id/highscore_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/play_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:background="#5bacdf"
+        android:drawableLeft="@drawable/highscore_icon_128"
+        android:drawableTint="#eee"
+        android:onClick="onHighscoreClick"
+        android:padding="10dp"
+        android:text=" Highscore"
+        android:textColor="#eee"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>
